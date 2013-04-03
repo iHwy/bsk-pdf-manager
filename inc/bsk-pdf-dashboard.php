@@ -6,6 +6,7 @@ class BSKPDFManagerDashboard {
 	var $_bsk_pdf_manager_OBJ_category = NULL;
 	var $_bsk_pdf_manager_OBJ_pdfs = NULL;
 	var $_bsk_pdf_manager_OBJ_pdf = NULL;
+	var $_bsk_pdf_manager_OBJ_settings_support = NULL;
 	
 	var $_obj_init_args = array();
 
@@ -24,10 +25,11 @@ class BSKPDFManagerDashboard {
 		require_once( 'bsk-pdf-manager-category.php' );
 		require_once( 'bsk-pdf-manager-pdfs.php' );	
 		require_once( 'bsk-pdf-manager-pdf.php' );
+		require_once( 'bsk-pdf-manager-settings-support.php' );
 		
 		$this->_bsk_pdf_manager_OBJ_category = new BSKPDFManagerCategory( $this->_obj_init_args );		
 		$this->_bsk_pdf_manager_OBJ_pdf = new BSKPDFManagerPDF( $this->_obj_init_args );	
-		
+		$this->_bsk_pdf_manager_OBJ_settings_support = new BSKPDFManagerSettingsSupport( $this->_obj_init_args );	
 		
 		add_action("admin_menu", array( $this, 'bsk_pdf_manager_dashboard_menu' ) );	
 	}
@@ -54,6 +56,13 @@ class BSKPDFManagerDashboard {
 						  $authorized_level, 
 						  'bsk-pdf-manager-pdfs', 
 						  array($this, 'bsk_pdf_manager_pdfs') );						  
+		
+		add_submenu_page( 'bsk-pdf-manager', 
+						  'Settings & Support', 
+						  'Settings & Support', 
+						  $authorized_level, 
+						  'bsk-pdf-manager-settings-support', 
+						  array($this, 'bsk_pdf_manager_settings_support') );					  
 	}
 	
 	function bsk_pdf_manager_categories(){
@@ -157,6 +166,30 @@ class BSKPDFManagerDashboard {
 			echo '	</form>
 				  </div>';
 		}
+	}
+	
+	function bsk_pdf_manager_settings_support(){
+		global $current_user;
+		
+		if (!$this->bsk_pdf_manager_current_user_can()){
+			wp_die( __('You do not have sufficient permissions to access this page.') );
+		}
+		
+			
+		echo '<div class="wrap">
+				<div id="icon-edit" class="icon32"><br/></div>
+				<h2>BSK PDF Settings & Support</h2>
+				<form id="bsk-pdf-manager-settings-form-id" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="page" value="bsk-pdf-manager-settings-support" />';
+				$this->_bsk_pdf_manager_OBJ_settings_support->show_settings();
+		echo '  <p style="margin-top:20px;"><input type="submit" id="bsk_pdf_manager_settings_save_form" class="button-primary" value="Save" /></p>'."\n";
+		echo '	</form>
+			  </div>';
+		
+		
+		echo '<div class="wrap">';
+			  $this->_bsk_pdf_manager_OBJ_settings_support->show_support();
+		echo '</div>';
 	}
 	
 	function bsk_pdf_manager_current_user_can(){

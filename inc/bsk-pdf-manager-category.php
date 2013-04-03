@@ -97,10 +97,14 @@ class BSKPDFManagerCategory {
 				continue;
 			}
 			$forStr .= '<ul>'."\n";
+			$open_target_str = get_option($this->_bsk_pdf_manager_managment_obj->_bsk_pdf_manager_OBJ_settings_support->_bsk_pdf_manager_settings_name_open_target, '');
+			if ($open_target_str){
+				$open_target_str = 'target="'.$open_target_str.'"';
+			}
 			foreach($pdf_items as $pdf_item){
 				if ( $pdf_item['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_item['file_name']) ){
 					$file_url = $home_url.'/'.$this->_pdfs_upload_folder.$pdf_item['file_name'];
-					$forStr .= '<li><a href="'.$file_url.'">'.$pdf_item['title'].'</a></li>'."\n";
+					$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item['title'].'</a></li>'."\n";
 				}
 			}
 			$forStr .= '</ul>'."\n";

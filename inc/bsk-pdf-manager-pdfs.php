@@ -41,6 +41,9 @@ class BSKPDFManagerPDFs extends WP_List_Table {
             case 'file_name':
                 echo $item['file_name'];
                 break;
+			case 'shortcode':
+				echo $item['shortcode'];
+				break;
 			case 'last_date':
                	echo $item['last_date'];
                 break;
@@ -62,6 +65,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 							'id'				=> 'ID',
 							'title'     		=> 'Title',
 							'file_name'     	=> 'File Name',
+							'shortcode'     	=> 'Shortcode',
 							'last_date' 		=> 'Last Date'
 						);
         
@@ -172,11 +176,13 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 				$file_url = get_option('home').'/'.$this->_pdfs_upload_folder.$pdf_record->file_name;
 				$file_str =  '<a href="'.$file_url.'" target="_blank">'.$pdf_record->file_name.'</a>';
 			}
+			$shortcode_str = $file_str ? '[bsk-pdf-manager-pdf id='.$pdf_record->id.']' : '';
 			$lists_data[] = array( 
 								'id' 				=> $pdf_record->id,
 								'title'     		=> '<a href="'.$edit_url.'">'.$pdf_record->title.'</a>',
 								'file_name'     	=> $file_str,
-								'last_date' 		=> $pdf_record->last_date
+								'shortcode'			=> $shortcode_str,
+								'last_date' 		=> $pdf_record->last_date,
 								 );
 		}
 		

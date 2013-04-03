@@ -40,6 +40,9 @@ class BSKPDFManagerCategories extends WP_List_Table {
 			case 'cat_title':
 				echo $item['cat_title'];
 				break;
+			case 'shortcode':
+				echo $item['shortcode'];
+				break;
             case 'last_date':
                 echo $item['last_date'];
                 break;
@@ -60,6 +63,7 @@ class BSKPDFManagerCategories extends WP_List_Table {
 			'cb'        		=> '<input type="checkbox"/>',
 			'id'				=> 'ID',
             'cat_title'     	=> 'Title',
+			'shortcode'     	=> 'Shortcode',
             'last_date' 		=> 'Date'
         );
         
@@ -139,6 +143,7 @@ class BSKPDFManagerCategories extends WP_List_Table {
 				'id' 				=> $category->id,
 				'cat_title'     	=> '<a href="'.$category_edit_page.'">'.$category->cat_title.'</a>',
 				'last_date'			=> $category->last_date,
+				'shortcode'			=> '[bsk-pdf-manager-list-category id='.$category->id.']'
 			);
 		}
 		
