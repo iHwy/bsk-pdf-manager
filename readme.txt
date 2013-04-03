@@ -5,7 +5,7 @@ Plugin URI: http://www.bannersky.com/html/bsk-pdf-manager.html
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
 Tested up to: 3.5.1
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 
 == Description ==
 
