@@ -35,7 +35,8 @@ Please visit <a href="http://www.bannersky.com/html/bsk-pdf-manager.html">http:/
 
 == Changelog ==
 1.1.0
-  * Add option to open PDF document in new window.
-  * Show shortcode in Categories page and PDF Documents page. For convenience user just need copy and paste it to where you want to show the PDF documents.
+* Add option to open PDF document in new window.
+* Show shortcode in Categories page and PDF Documents page. For convenience user just need copy and paste it to where you want to show the PDF documents.
+
 1.0.0 First version.
 
