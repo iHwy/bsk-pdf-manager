@@ -7,6 +7,12 @@ class BSKPDFManagerPDF {
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
 	var $_bsk_pdf_manager_managment_obj = NULL;
+	
+	var $_bsk_pdfs_page_name = '';
+	var $_file_upload_message = array();
+	
+	var $_plugin_pages_name = array();
+	var $_open_target_option_name = '';
    
 	public function __construct( $args ) {
 		global $wpdb;
@@ -16,13 +22,83 @@ class BSKPDFManagerPDF {
 		$this->_pdfs_upload_path = $args['pdf_upload_path'];
 	    $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
 		$this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
+		$this->_plugin_pages_name = $args['pages_name_A'];
+		$this->_open_target_option_name = $args['open_target_option_name'];
+		
+		$this->_bsk_pdfs_page_name = $this->_plugin_pages_name['pdf'];
 		
 		$this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
+		$this->bsk_pdf_manager_init_message();
+		add_action('admin_notices', array($this, 'bsk_pdf_manager_admin_notice') );
 		
 		add_action( 'bsk_pdf_manager_pdf_save', array($this, 'bsk_pdf_manager_pdf_save_fun') );
 		
 		add_shortcode('bsk-pdf-manager-pdf', array($this, 'bsk_pdf_manager_show_pdf') );
 	}
+	
+	function bsk_pdf_manager_init_message(){
+	
+		$this->_file_upload_message[1] = array( 'message' => 'The uploaded file exceeds the maximum file size allowed.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[2] = array( 'message' => 'The uploaded file exceeds the maximum file size allowed.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[3] = array( 'message' => 'The uploaded file was only partially uploaded. Please try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[4] = array( 'message' => 'No file was uploaded. Please try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[5] = array( 'message' => 'File size is 0 please check and try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[6] = array( 'message' => 'Failed, seems there is no temporary folder. Please try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[7] = array( 'message' => 'Failed to write file to disk. Please try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[8] = array( 'message' => 'A PHP extension stopped the file upload. Please try again in a few minutes.', 
+												'type' => 'ERROR');
+		$this->_file_upload_message[15] = array( 'message' => 'Invalid file type, the file you uploaded is not allowed.', 
+												 'type' => 'ERROR');
+		$this->_file_upload_message[16] = array( 'message' => 'Faild to write file to destination folder.', 
+												 'type' => 'ERROR');
+		$this->_file_upload_message[17] = array( 'message' => 'Invalid file. Please try again.', 
+												 'type' => 'ERROR');
+		
+		$this->_file_upload_message[20] = array( 'message' => 'Your file uploaded successfully.', 
+												 'type' => 'WARNING');
+		$this->_file_upload_message[21] = array( 'message' => 'Insert file record into database failed.', 
+												 'type' => 'WARNING');												 
+												 
+	}
+	
+	function bsk_pdf_manager_admin_notice(){
+		$current_page = isset($_REQUEST['page']) ? $_REQUEST['page'] : '';
+		if(!$current_page || !in_array($current_page, $this->_plugin_pages_name)){
+			return;
+		}
+		
+		$message_id = isset($_REQUEST['message']) ? $_REQUEST['message'] : 0;
+		if(!$message_id){
+			return;
+		}
+		if (!isset($this->_file_upload_message[ $message_id ])){
+			return;
+		}
+		
+		$type = $this->_file_upload_message[ $message_id ]['type'];
+		$msg_to_show = $this->_file_upload_message[ $message_id ]['message'];
+		if(!$msg_to_show){
+			return;
+		}
+		//admin message
+		if($type == 'WARNING'){
+			echo '<div class="updated">';
+			echo '<p>'.$msg_to_show.'</p>';
+			echo '</div>';
+		}else if($type == 'ERROR'){
+			echo '<div class="error">';
+			echo '<p>'.$msg_to_show.'</p>';
+			echo '</div>';
+		}
+	}
+
 	
 	function pdf_edit( $pdf_id = -1 ){
 		global $wpdb;
@@ -84,14 +160,13 @@ class BSKPDFManagerPDF {
                 </li>
                 <?php if ($pdf_id > 0 && $file_url){ ?>
                 <li>
-                    <label>Delete old ?</label>
+                    <label>Old File:</label>
                     <a href="<?php echo $file_url; ?>" target="_blank"><?php echo $pdf_obj_array['file_name']; ?></a>
-                    <input type="checkbox" name="bsk_pdf_manager_pdf_file_rmv" id="bsk_pdf_manager_pdf_file_rmv_id" value="true" />
                     <input type="hidden" name="bsk_pdf_manager_pdf_file_old" id="bsk_pdf_manager_pdf_file_old_id" value="<?php echo $pdf_obj_array['file_name']; ?>" />
                 </li>
                 <?php } ?>
                 <li>
-                    <label>Please select a file to upload:</label>
+                    <label>Upload new:</label>
                     <input type="file" name="bsk_pdf_file" id="bsk_pdf_file_id" value="Browse" />
                 </li>
                 <li>
@@ -135,6 +210,7 @@ class BSKPDFManagerPDF {
 			}
 		}
 		
+		$message_id = 20;
 		if ($pdf_id > 0){
 			//update
 			if (isset($data['bsk_pdf_manager_pdf_file_rmv']) && $data['bsk_pdf_manager_pdf_file_rmv'] == 'true'){
@@ -143,7 +219,7 @@ class BSKPDFManagerPDF {
 					$pdf_data['file_name'] = '';
 				}
 			}
-			$return_detinate_name = $this->bsk_pdf_manager_pdf_upload_file($_FILES['template_tool_file'], $pdf_id);
+			$return_detinate_name = $this->bsk_pdf_manager_pdf_upload_file($_FILES['bsk_pdf_file'], $pdf_id, $message_id, $bsk_pdf_manager_pdf_file_old);
 			if ($return_detinate_name){
 				$pdf_data['file_name'] = $return_detinate_name;
 				//new one uploaded, the old one should be removed
@@ -156,12 +232,16 @@ class BSKPDFManagerPDF {
 		}else{
 			//insert
 			$return = $wpdb->insert( $this->_pdfs_db_tbl_name, $pdf_data );
-			if (!$return){
-				$msg = 'Insert PDF failed.';
+			if ( !$return ){
+				$message_id = 21;
+				
+				$redirect_to = admin_url( 'admin.php?page='.$this->_bsk_pdfs_page_name.'&cat='.$pdf_data['cat_id'].'&message='.$message_id );
+				wp_redirect( $redirect_to );
+				exit;
 			}else{
 				$new_pdf_id = $wpdb->insert_id;
-				$return_detinate_name = $this->bsk_pdf_manager_pdf_upload_file($_FILES['bsk_pdf_file'], $new_pdf_id);
-				if ($return_detinate_name){
+				$return_detinate_name = $this->bsk_pdf_manager_pdf_upload_file($_FILES['bsk_pdf_file'], $new_pdf_id, $message_id);
+				if ( $return_detinate_name ){
 					$wpdb->update( $this->_pdfs_db_tbl_name, array('file_name' => $return_detinate_name), array('id' => $new_pdf_id) );
 				}else{
 					$sql = 'DELETE FROM `'.$this->_pdfs_db_tbl_name.'` WHERE id ='.$new_pdf_id;
@@ -169,26 +249,35 @@ class BSKPDFManagerPDF {
 				}
 			}
 		}
+		
+		$redirect_to = admin_url( 'admin.php?page='.$this->_bsk_pdfs_page_name.'&cat='.$pdf_data['cat_id'].'&message='.$message_id  );
+		wp_redirect( $redirect_to );
+		exit;
 	}
 	
-	function bsk_pdf_manager_pdf_upload_file($file, $destination_name_prefix){
-		$allowedExts = array("pdf");
-		$extension = end(explode(".", $file["name"]));
-		if ($file["type"] != "application/pdf" ||
-		    in_array($extension, $allowedExts) === false || 
-			$file["error"] != 0 || 
-			$file["name"] == ""
-			){
-			$msg = 'Invalid file. Only .pdf file allowed.';
-			//show error message
+	function bsk_pdf_manager_pdf_upload_file($file, $destination_name_prefix, &$message_id, $old_file = ''){
+		if (!$file["name"]){
+			if($old_file){
+				$message_id = 17;
+			}
+			return false;
+		}				
+		if ( $file["error"] != 0 ){
+			$message_id = $file["error"];
+			return false;
+		}
+		$extension = strtolower( end(explode(".", $file["name"])) );
+		if( $file["type"] != "application/pdf" || $extension != 'pdf' ){
+			$message_id = 15;
 			return false;
 		}
 		$destinate_file_name = $destination_name_prefix.'_'.sanitize_file_name($file["name"]);
 		$ret = move_uploaded_file($file["tmp_name"], $this->_pdfs_upload_path.$destinate_file_name);
-		if ($ret){
-			return $destinate_file_name;
+		if( !$ret ){
+			$message_id = 16;
+			return false;
 		}
-		return false;
+		return $destinate_file_name;
 	}
 	
 	function bsk_pdf_manager_pdf_convert_hr_to_bytes( $size ) {
@@ -211,28 +300,24 @@ class BSKPDFManagerPDF {
 			return '';
 		}
 		
-		$str_header = '<ul>'."\n";
 		$str_body = '';
-		$str_footer .= '</ul>'."\n";
 		//get pdf items in the category
 		$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `id` = ".$id." order by `title` ASC";
 		$pdf_items = $wpdb->get_results($sql, ARRAY_A);
 		if (count($pdf_items) < 1){
 			return '';
 		}
-		$open_target_str = get_option($this->_bsk_pdf_manager_managment_obj->_bsk_pdf_manager_OBJ_settings_support->_bsk_pdf_manager_settings_name_open_target, '');
+		$open_target_str = get_option($this->_open_target_option_name, '');
 		if ($open_target_str){
 			$open_target_str = 'target="'.$open_target_str.'"';
 		}
 		foreach($pdf_items as $pdf_item){
 			if ( $pdf_item['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_item['file_name']) ){
 				$file_url = get_option('home').'/'.$this->_pdfs_upload_folder.$pdf_item['file_name'];
-				$str_body .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item['title'].'</a></li>'."\n";
+				$str_body .= '<p><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item['title'].'</a></p>'."\n";
 			}
 		}
-		if ($str_body){
-			return $str_header.$str_body.$str_footer;
-		}
-		return '';
+
+		return $str_body;
 	}
 }

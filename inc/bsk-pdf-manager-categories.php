@@ -11,7 +11,9 @@ class BSKPDFManagerCategories extends WP_List_Table {
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
 	var $_bsk_pdf_manager_managment_obj = NULL;
-   
+	var $_bsk_categories_page_name = '';
+	
+	var $_plugin_pages_name = array();
    
     function __construct( $args = array() ) {
         
@@ -27,6 +29,9 @@ class BSKPDFManagerCategories extends WP_List_Table {
 	   $this->_pdfs_upload_path = $args['pdf_upload_path'];
 	   $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
 	   $this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
+	   $this->_plugin_pages_name = $args['pages_name_A'];
+	   
+	   $this->_bsk_categories_page_name = $this->_plugin_pages_name['category'];
 	   
 	   $this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
 	   
@@ -70,6 +75,15 @@ class BSKPDFManagerCategories extends WP_List_Table {
         return $columns;
     }
    
+	function get_sortable_columns() {
+		$c = array(
+					'cat_title' => 'cat_title',
+					'last_date'    => 'last_date'
+					);
+		
+		return $c;
+	}
+	
     function get_views() {
 		//$views = array('filter' => '<select name="a"><option value="1">1</option></select>');
 		
@@ -85,46 +99,66 @@ class BSKPDFManagerCategories extends WP_List_Table {
         return $actions;
     }
 
-    function process_bulk_action() {
+    function do_bulk_action() {
 		global $wpdb;
 		
 		$categories_id = isset( $_POST['bsk-pdf-manager-categories'] ) ? $_POST['bsk-pdf-manager-categories'] : false;
 		if ( !$categories_id || !is_array( $categories_id ) || count( $categories_id ) < 1 ){
 			return;
 		}
-		$ids = implode(',', $categories_id);
-		$ids = trim($ids);
-		$sql = 'DELETE FROM `'.$this->_categories_db_tbl_name.'` WHERE id IN('.$ids.')';
-		$wpdb->query( $sql );
-
-		//when one category deleted all lists under it will be removed also
-		$sql = 'SELECT * FROM `'.$this->_pdfs_db_tbl_name.'` WHERE cat_id IN('.$ids.')';
-		$pdfs = $wpdb->get_results( $sql );
-		if ($pdfs && count($pdfs) > 0){
-			foreach($pdfs as $pdf){
-				if ( $pdf->file_name && file_exists($this->_pdfs_upload_path.$pdf->file_name) ){
-					unlink($this->_pdfs_upload_path.$pdf->file_name);
+		$action = -1;
+		if ( isset($_POST['action']) && $_POST['action'] != -1 ){
+			$action = $_POST['action'];
+		}
+		if ( isset($_POST['action2']) && $_POST['action2'] != -1 ){
+			$action = $_POST['action2'];
+		}
+		if ( $action == -1 ){
+			return;
+		}else if ( $action == 'delete' ){
+			$ids = implode(',', $categories_id);
+			$ids = trim($ids);
+			$sql = 'DELETE FROM `'.$this->_categories_db_tbl_name.'` WHERE id IN('.$ids.')';
+			$wpdb->query( $sql );
+	
+			//when one category deleted all lists under it will be removed also
+			$sql = 'SELECT * FROM `'.$this->_pdfs_db_tbl_name.'` WHERE cat_id IN('.$ids.')';
+			$pdfs = $wpdb->get_results( $sql );
+			if ($pdfs && count($pdfs) > 0){
+				foreach($pdfs as $pdf){
+					if ( $pdf->file_name && file_exists($this->_pdfs_upload_path.$pdf->file_name) ){
+						unlink($this->_pdfs_upload_path.$pdf->file_name);
+					}
 				}
 			}
+			
+			$sql = 'DELETE FROM `'.$this->_pdfs_db_tbl_name.'` WHERE cat_id IN('.$ids.')';
+			$wpdb->query( $sql );
 		}
-		
-		$sql = 'DELETE FROM `'.$this->_pdfs_db_tbl_name.'` WHERE cat_id IN('.$ids.')';
-		$wpdb->query( $sql );
     }
 
-    function categories_data() {
+    function get_data() {
 		global $wpdb;
 		
         // check to see if we are searching
         if( isset( $_POST['s'] ) ) {
             $search = trim( $_POST['s'] );
         }
+		if ( isset( $_REQUEST['orderby'] ) ){
+			$orderby = $_REQUEST['orderby'];
+		}
+		if ( isset( $_REQUEST['order'] ) ){
+			$order = $_REQUEST['order'];
+		}
 		
 		$sql = 'SELECT * FROM '.
 		       $this->_categories_db_tbl_name.' AS c';
 
 		$whereCase = $search ? ' c.cat_title LIKE "%'.$search.'%"' : '';
-		$orderCase = ' ORDER BY c.cat_title ASC';
+		$orderCase = ' ORDER BY c.last_date DESC';
+		if ( $orderby ){
+			$orderCase = ' ORDER BY c.'.$orderby.' '.$order;
+		}
 		$whereCase = $whereCase ? ' WHERE '.$whereCase : '';
 		
 		$catgories = $wpdb->get_results($sql.$whereCase.$orderCase);
@@ -160,23 +194,16 @@ class BSKPDFManagerCategories extends WP_List_Table {
 		
         add_thickbox();
 
-        $columns = $this->get_columns();
-        $hidden = array(); // no hidden columns
+		$this->do_bulk_action();
        
-        $this->_column_headers = array( $columns, $hidden );
-       
-        $this->process_bulk_action();
-       
-        $data = $this->categories_data();
+        $data = $this->get_data();
    
         $current_page = $this->get_pagenum();
-    
         $total_items = count( $data );
        
 	    if ($total_items > 0){
         	$data = array_slice( $data,( ( $current_page-1 )*$per_page ),$per_page );
 		}
-       
         $this->items = $data;
 
         $this->set_pagination_args( array( 
@@ -184,7 +211,38 @@ class BSKPDFManagerCategories extends WP_List_Table {
             'per_page'    => $per_page,                     // We have to determine how many items to show on a page
             'total_pages' => ceil( $total_items/$per_page ) // We have to calculate the total number of pages
         ) );
-        
     }
-   
+	
+
+	
+	function get_column_info() {
+
+		 $columns = array( 
+							'cb'        		=> '<input type="checkbox"/>',
+							'id'				=> 'ID',
+							'cat_title'     	=> 'Title',
+							'shortcode'     	=> 'Shortcode',
+							'last_date' 		=> 'Date'
+						);
+		
+		$hidden = array();
+
+		$_sortable = apply_filters( "manage_{$screen->id}_sortable_columns", $this->get_sortable_columns() );
+
+		$sortable = array();
+		foreach ( $_sortable as $id => $data ) {
+			if ( empty( $data ) )
+				continue;
+
+			$data = (array) $data;
+			if ( !isset( $data[1] ) )
+				$data[1] = false;
+
+			$sortable[$id] = $data;
+		}
+
+		$_column_headers = array( $columns, $hidden, $sortable );
+
+		return $_column_headers;
+	}
 }

@@ -10,7 +10,8 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 	var $_pdfs_db_tbl_name = '';
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
-	var $_bsk_pdf_manager_managment_obj = NULL;
+
+	var $_plugin_pages_name = array();
 	
     function __construct( $args = array() ) {
         
@@ -25,7 +26,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 	   $this->_pdfs_db_tbl_name = $args['pdfs_db_tbl_name'];
 	   $this->_pdfs_upload_path = $args['pdf_upload_path'];
 	   $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
-	   $this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
+	   $this->_plugin_pages_name = $args['pages_name_A'];
 	   
 	   $this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
     }
@@ -71,6 +72,15 @@ class BSKPDFManagerPDFs extends WP_List_Table {
         
         return $columns;
     }
+	
+	function get_sortable_columns() {
+		$c = array(
+					'title' => 'title',
+					'last_date'    => 'last_date'
+					);
+		
+		return $c;
+	}
    
     function get_views() {
 		global $wpdb;
@@ -84,9 +94,9 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 		if (!$categoreies || count($categoreies) < 1){
 			$select_str_body = '<option value="0">Please add category first</option>';
 		}else{
-			$current_category_id = $_POST['bsk_pdf_manager_categories'];
+			$current_category_id = $_REQUEST['cat'];
 			if ($current_category_id < 1){
-				$current_category_id = $_POST['bsk_pdf_manager_pdf_edit_categories'];
+				$current_category_id = $_REQUEST['bsk_pdf_manager_pdf_edit_categories'];
 			}
 			$select_str_body = '<option value="0">Please select category</option>';
 			foreach($categoreies as $category){
@@ -112,7 +122,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
         return $actions;
     }
 
-    function process_bulk_action() {
+    function do_bulk_action() {
 		global $wpdb;
 		
 		$lists_id = isset( $_POST['bsk-pdf-manager-pdfs'] ) ? $_POST['bsk-pdf-manager-pdfs'] : false;
@@ -137,17 +147,22 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 		$wpdb->query( $sql );
     }
 
-    function lists_data() {
+    function get_data() {
 		global $wpdb;
 		
         // check to see if we are searching
         if( isset( $_POST['s'] ) ) {
             $search = trim( $_POST['s'] );
         }
-		
-		$current_category_id = $_POST['bsk_pdf_manager_categories'];
+		$current_category_id = $_REQUEST['cat'];
 		if ($current_category_id < 1){
 			$current_category_id = $_POST['bsk_pdf_manager_pdf_edit_categories'];
+		}
+		if ( isset( $_REQUEST['orderby'] ) ){
+			$orderby = $_REQUEST['orderby'];
+		}
+		if ( isset( $_REQUEST['order'] ) ){
+			$order = $_REQUEST['order'];
 		}
 		
 		$sql = 'SELECT * FROM '.
@@ -156,7 +171,10 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 		$search_fields = ' l.title LIKE "%'.$search.'%"';
 						 
 		$whereCase = $search ? $search_fields : '';
-		$orderCase = ' ORDER BY l.title ASC, last_date DESC ';
+		$orderCase = ' ORDER BY l.last_date DESC';
+		if ( $orderby ){
+			$orderCase = ' ORDER BY l.'.$orderby.' '.$order;
+		}
 		$whereCase = $whereCase ? ' WHERE l.cat_id = '.$current_category_id.' AND '.$whereCase : ' WHERE l.cat_id = '.$current_category_id;
 
 		$all_pdfs = $wpdb->get_results($sql.$whereCase.$orderCase);
@@ -204,9 +222,9 @@ class BSKPDFManagerPDFs extends WP_List_Table {
        
         $this->_column_headers = array( $columns, $hidden );
        
-        $this->process_bulk_action();
+        $this->do_bulk_action();
        
-        $data = $this->lists_data();
+        $data = $this->get_data();
    
         $current_page = $this->get_pagenum();
     
@@ -225,5 +243,37 @@ class BSKPDFManagerPDFs extends WP_List_Table {
         ) );
         
     }
-   
+	
+	function get_column_info() {
+
+		 $columns = array( 
+							'cb'        		=> '<input type="checkbox"/>',
+							'id'				=> 'ID',
+							'title'     		=> 'Title',
+							'file_name'     	=> 'File Name',
+							'shortcode'     	=> 'Shortcode',
+							'last_date' 		=> 'Last Date'
+						);
+		
+		$hidden = array();
+
+		$_sortable = apply_filters( "manage_{$screen->id}_sortable_columns", $this->get_sortable_columns() );
+
+		$sortable = array();
+		foreach ( $_sortable as $id => $data ) {
+			if ( empty( $data ) )
+				continue;
+
+			$data = (array) $data;
+			if ( !isset( $data[1] ) )
+				$data[1] = false;
+
+			$sortable[$id] = $data;
+		}
+
+		$_column_headers = array( $columns, $hidden, $sortable );
+
+
+		return $_column_headers;
+	}   
 }

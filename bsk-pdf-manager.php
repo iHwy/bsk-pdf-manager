@@ -3,7 +3,7 @@
 /*
 Plugin Name: BSK PDF Manager
 Description: Help you manager PDF documents. PDF documents can be filter by category. Support short code to show special PDF document or list all under special category. Widget display will be supported soon.
-Version: 1.1.0
+Version: 1.2.0
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -35,6 +35,8 @@ class BSKPDFManager {
 	var $_bsk_pdf_manager_cats_tbl_name = 'bsk_pdf_manager_cats';
 	var $_bsk_pdf_manager_pdfs_tbl_name = 'bsk_pdf_manager_pdfs';
 	
+	var $_bsk_pdf_manager_pages = array('category' => 'bsk-pdf-manager', 'pdf' => 'bsk-pdf-manager-pdfs', 'setting' => 'bsk-pdf-manager-settings-support', 'support' => 'bsk-pdf-manager-settings-support');
+	
 	//objects
 	var $_bsk_pdf_manager_OBJ_dashboard = NULL;
 	
@@ -43,7 +45,6 @@ class BSKPDFManager {
 		
 		$this->_bsk_pdf_manager_cats_tbl_name = $wpdb->prefix.$this->_bsk_pdf_manager_cats_tbl_name;
 		$this->_bsk_pdf_manager_pdfs_tbl_name = $wpdb->prefix.$this->_bsk_pdf_manager_pdfs_tbl_name;
-		$this->_bsk_pdf_manager_tmpls_tools_tbl_name = $wpdb->prefix.$this->_bsk_pdf_manager_tmpls_tools_tbl_name;
 
 
 		$this->_bsk_pdf_manager_upload_path = str_replace("\\", "/", $this->_bsk_pdf_manager_upload_path);
@@ -51,45 +52,48 @@ class BSKPDFManager {
 		$_bsk_pdf_manager_upload_folder = $this->_bsk_pdf_manager_upload_path.$this->_bsk_pdf_manager_upload_folder;
 		if ( !is_dir($_bsk_pdf_manager_upload_folder) ) {
 			if ( !wp_mkdir_p( $_bsk_pdf_manager_upload_folder ) ) {
-				$msg = 'Directory <strong>' . $_bsk_pdf_manager_upload_folder . '</strong> can not be created. Please create it first yourself.';
-				
-				$this->_bsk_pdf_manager_admin_notice_message['upload_folder_missing']  = $msg;
+				$this->_bsk_pdf_manager_admin_notice_message['upload_folder_missing']  = array( 'message' => 'Directory <strong>' . $_bsk_pdf_manager_upload_folder . '</strong> can not be created. Please create it first yourself.',
+				                                                                                'type' => 'ERROR');
 			}
-		}else{
-			unset($this->_bsk_pdf_manager_admin_notice_message['upload_folder_missing']);
 		}
+		
 		if ( !is_writeable( $_bsk_pdf_manager_upload_folder ) ) {
 			$msg  = 'Directory <strong>' . $this->_bsk_pdf_manager_upload_folder . '</strong> is not writeable ! ';
 			$msg .= 'Check <a href="http://codex.wordpress.org/Changing_File_Permissions">http://codex.wordpress.org/Changing_File_Permissions</a> for how to set the permission.';
 
-			$this->_bsk_pdf_manager_admin_notice_message['upload_folder_not_writeable']  = $msg;
-		}else{
-			unset($this->_bsk_pdf_manager_admin_notice_message['upload_folder_not_writeable']);
+			$this->_bsk_pdf_manager_admin_notice_message['upload_folder_not_writeable']  = array( 'message' => $msg,
+			                                                                                      'type' => 'ERROR');
 		}
 
 		if(is_admin()) {
 			add_action('admin_notices', array($this, 'bsk_pdf_manager_admin_notice') );
-			add_action('admin_enqueue_scripts', array(&$this, 'bsk_pdf_manager_enqueue_scripts_css') );
-		}else{
-			add_action('wp_enqueue_scripts', array(&$this, 'bsk_pdf_manager_enqueue_scripts_css') );
+			add_action('admin_init', array(&$this, 'bsk_pdf_manager_admin_enqueue_scripts_css') );
 		}
+		
+		//create or update table
+		$this->bsk_pdf_manager_create_table();
 		
 		//include others class
 		require_once( 'inc/bsk-pdf-dashboard.php' );
-		$this->_bsk_pdf_manager_OBJ_dashboard = new BSKPDFManagerDashboard( $this );
 		
+		$arg = array();
+		$arg['upload_folder'] = $this->_bsk_pdf_manager_upload_folder;
+		$arg['upload_path'] = $this->_bsk_pdf_manager_upload_path;
+		$arg['cat_tbl_name'] = $this->_bsk_pdf_manager_cats_tbl_name;
+		$arg['pdf_tbl_name'] = $this->_bsk_pdf_manager_pdfs_tbl_name;
+		$arg['pages_name_A'] = $this->_bsk_pdf_manager_pages;
 		
-		//shortcodes
+		$this->_bsk_pdf_manager_OBJ_dashboard = new BSKPDFManagerDashboard( $arg );
 		
 		//hooks
 		register_activation_hook(__FILE__, array($this, 'bsk_pdf_manager_activate') );
 		register_deactivation_hook( __FILE__, array($this, 'bsk_pdf_manager_deactivate') );
+		
+		
 		add_action('init', array($this, 'bsk_pdf_manager_post_action'));
 	}
 	
 	function bsk_pdf_manager_activate(){
-		$this->bsk_pdf_manager_create_table();
-		
 		// Clear the permalinks
 		flush_rewrite_rules();
 	}
@@ -99,25 +103,45 @@ class BSKPDFManager {
 		flush_rewrite_rules();
 	}
 	
-	function bsk_pdf_manager_enqueue_scripts_css(){
-		
+	function bsk_pdf_manager_admin_enqueue_scripts_css(){
 		wp_enqueue_script('jquery');
-		
-		if ( is_admin() ){
-			wp_enqueue_style( 'bsk-pdf-manager-admin', plugins_url('css/bsk_pdf_manager_admin.css', __FILE__) );
-			wp_enqueue_script( 'bsk-pdf-manager-admin', plugins_url('js/bsk_pdf_manager_admin.js', __FILE__), array('jquery') );
-		}
+		wp_enqueue_style( 'bsk-pdf-manager-admin', plugins_url('css/bsk_pdf_manager_admin.css', __FILE__) );
+		wp_enqueue_script( 'bsk-pdf-manager-admin', plugins_url('js/bsk_pdf_manager_admin.js', __FILE__), array('jquery') );
 	}
 	
 	function bsk_pdf_manager_admin_notice(){
-		if (count($this->_bsk_pdf_manager_admin_notice_message) < 1){
-			return;
+		$warning_message = array();
+		$error_message = array();
+		
+		//admin message
+		if (count($this->_bsk_pdf_manager_admin_notice_message) > 0){
+			foreach($this->_bsk_pdf_manager_admin_notice_message as $msg){
+				if($msg['type'] == 'ERROR'){
+					$error_message[] = $msg['message'];
+				}
+				if($msg['type'] == 'WARNING'){
+					$warning_message[] = $msg['message'];
+				}
+			}
 		}
-		echo '<div class="update-nag">';
-		foreach($this->_bsk_pdf_manager_admin_notice_message as $msg){
-			echo '<p>'.$msg.'</p>';
+		
+		//show error message
+		if(count($warning_message) > 0){
+			echo '<div class="update-nag">';
+			foreach($this->warning_message as $msg_to_show){
+				echo '<p>'.$msg_to_show.'</p>';
+			}
+			echo '</div>';
 		}
-		echo '</div>';
+		
+		//show error message
+		if(count($error_message) > 0){
+			echo '<div class="error">';
+			foreach($this->error_message as $msg_to_show){
+				echo '<p>'.$msg_to_show.'</p>';
+			}
+			echo '</div>';
+		}
 	}
 
 	function bsk_pdf_manager_create_table(){

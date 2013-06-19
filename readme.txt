@@ -11,14 +11,14 @@ Stable tag: 1.1.0
 
 The plugin help you manage your PDF documents in WordPress. You may upload by categories and display by caregories or show one special PDF document.
 
-It is easy to use. You just need copy the short codes into the page/post where you want to show. Then it will show the link in your page/post.
+It is easy to use. You just need copy the shortcodes into the page/post where you want to show. Then it will show the link in your page/post.
 
 
 == Installation ==
 
-Activate the plugin then you can use either a short code [bsk-pdf-manager-pdf id=22] to show the link of a special PDF document.
+Activate the plugin then you can use either a shortcode [bsk-pdf-manager-pdf id=xx] to show the link of a special PDF document of id xx.
 
-Or you may use [bsk-pdf-manager-list-category id=3] to show all PDF documents under the category of id 3.
+Or you may use [bsk-pdf-manager-list-category id=xx] to show all PDF documents under the category of id xx.
 
 The plugin has a very easy admin page that allows you to manage categories and PDF documents.
 
@@ -34,6 +34,14 @@ Please visit <a href="http://www.bannersky.com/html/bsk-pdf-manager.html">http:/
 
 
 == Changelog ==
+1.2.0
+
+* Fixed several small bug.
+
+* Support order by in admin dashboard.
+
+* Hide category title when list PDF.
+
 1.1.0
 
 * Add option to open PDF document in new window.

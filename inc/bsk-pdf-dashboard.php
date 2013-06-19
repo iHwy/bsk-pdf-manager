@@ -8,18 +8,29 @@ class BSKPDFManagerDashboard {
 	var $_bsk_pdf_manager_OBJ_pdf = NULL;
 	var $_bsk_pdf_manager_OBJ_settings_support = NULL;
 	
+	var $_bsk_categories_page_name = '';
+	var $_bsk_pdfs_page_name = '';
+	var $_bsk_settings_support_page = '';
+	
+	var $_bsk_open_target_option_name = '_bsk_pdf_manager_open_target';
+	var $_bsk_category_list_has_title = '_bsk_pdf_manager_category_list_has_title';
+	
 	var $_obj_init_args = array();
 
-	public function __construct( $checklist_obj ) {
+	public function __construct( $arg ) {
 		global $wpdb;
 		
-		$this->_bsk_pdf_manager_OBJ = $checklist_obj;
+		$this->_bsk_categories_page_name = $arg['pages_name_A']['category'];
+		$this->_bsk_pdfs_page_name = $arg['pages_name_A']['pdf'];
+		$this->_bsk_settings_support_page = $arg['pages_name_A']['setting'];				
 		
-		$this->_obj_init_args['categories_db_tbl_name'] = $this->_bsk_pdf_manager_OBJ->_bsk_pdf_manager_cats_tbl_name;
-		$this->_obj_init_args['pdfs_db_tbl_name'] = $this->_bsk_pdf_manager_OBJ->_bsk_pdf_manager_pdfs_tbl_name;
-		$this->_obj_init_args['pdf_upload_path'] = $this->_bsk_pdf_manager_OBJ->_bsk_pdf_manager_upload_path;
-		$this->_obj_init_args['pdf_upload_folder'] = $this->_bsk_pdf_manager_OBJ->_bsk_pdf_manager_upload_folder;
-		$this->_obj_init_args['management_obj'] = $this;
+		$this->_obj_init_args['categories_db_tbl_name'] = $arg['cat_tbl_name'];
+		$this->_obj_init_args['pdfs_db_tbl_name'] = $arg['pdf_tbl_name'];
+		$this->_obj_init_args['pdf_upload_path'] = $arg['upload_path'];
+		$this->_obj_init_args['pdf_upload_folder'] = $arg['upload_folder'];
+		$this->_obj_init_args['pages_name_A'] = $arg['pages_name_A'];
+		$this->_obj_init_args['open_target_option_name'] = $this->_bsk_open_target_option_name;
+		$this->_obj_init_args['show_category_title'] = $this->_bsk_category_list_has_title;
 		
 		require_once( 'bsk-pdf-manager-categories.php' );
 		require_once( 'bsk-pdf-manager-category.php' );
@@ -86,7 +97,7 @@ class BSKPDFManagerDashboard {
 			//Fetch, prepare, sort, and filter our data...
 			$this->_bsk_pdf_manager_OBJ_categories->prepare_items();
 			
-			$category_add_new_page = admin_url( 'admin.php?page=bsk-pdf-manager' );
+			$category_add_new_page = admin_url( 'admin.php?page='.$this->_bsk_categories_page_name );
 			$category_add_new_page = add_query_arg( 'view', 'addnew', $category_add_new_page );
 	
 			echo '<div class="wrap">
@@ -142,7 +153,7 @@ class BSKPDFManagerDashboard {
 			echo '<div class="wrap">
 					<div id="icon-edit" class="icon32"><br/></div>
 					<h2>BSK PDF Documents<a href="'.$add_new_page.'" class="add-new-h2">Add New</a></h2>
-					<form id="bsk-pdf-manager-pdfs-form-id" method="post">
+					<form id="bsk-pdf-manager-pdfs-form-id" method="post" action="'.admin_url( 'admin.php?page=bsk-pdf-manager-pdfs' ).'">
 						<input type="hidden" name="page" value="bsk-pdf-manager-pdfs" />
 						<input type="hidden" name="view" value="list" />';
 						$this->_bsk_pdf_manager_OBJ_pdfs->search_box( 'search', 'bsk-pdf-manager-pdfs' );
@@ -158,7 +169,7 @@ class BSKPDFManagerDashboard {
 			echo '<div class="wrap">
 					<div id="icon-edit" class="icon32"><br/></div>
 					<h2>BSK PDF Document</h2>
-					<form id="bsk-pdf-manager-pdfs-form-id" method="post" enctype="multipart/form-data">
+					<form id="bsk-pdf-manager-pdfs-form-id" method="post" enctype="multipart/form-data" action="'.admin_url( 'admin.php?page=bsk-pdf-manager-pdfs' ).'">
 					<input type="hidden" name="page" value="bsk-pdf-manager-pdfs" />
 					<input type="hidden" name="view" value="list" />';
 					$this->_bsk_pdf_manager_OBJ_pdf->pdf_edit( $pdf_id );

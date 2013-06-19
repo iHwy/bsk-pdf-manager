@@ -7,6 +7,11 @@ class BSKPDFManagerCategory {
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
     var $_bsk_pdf_manager_managment_obj = NULL;
+	var $_bsk_categories_page_name = '';
+	
+	var $_plugin_pages_name = array();
+	var $_open_target_option_name = '';
+	var $_show_category_title_when_listing_pdfs = '';
    
 	public function __construct( $args ) {
 		global $wpdb;
@@ -16,7 +21,11 @@ class BSKPDFManagerCategory {
 		$this->_pdfs_upload_path = $args['pdf_upload_path'];
 	    $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
 	    $this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
+		$this->_plugin_pages_name = $args['pages_name_A'];
+		$this->_open_target_option_name = $args['open_target_option_name'];
+		$this->_show_category_title_when_listing_pdfs = $args['show_category_title'];
 		
+		$this->_bsk_categories_page_name = $this->_plugin_pages_name['category'];
 		$this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
 		
 		add_action('bsk_pdf_manager_category_save', array($this, 'bsk_pdf_manager_category_save_fun'));
@@ -73,6 +82,10 @@ class BSKPDFManagerCategory {
 			//insert
 			$wpdb->insert( $this->_categories_db_tbl_name, array( 'cat_title' => $title, 'last_date' => $last_date) );
 		}
+		
+		$redirect_to = admin_url( 'admin.php?page='.$this->_bsk_categories_page_name );
+		wp_redirect( $redirect_to );
+		exit;
 	}
 	
 	function bsk_pdf_manager_list_pdfs_by_cat($atts, $content){
@@ -87,9 +100,12 @@ class BSKPDFManagerCategory {
 		}
 		
 		$home_url = get_option('home');
+		$show_cat_title = get_option($this->_show_category_title_when_listing_pdfs, false);
 		foreach( $categories as $category){
-			$forStr .=	'<div class="bsk-pdf-category">'."\n".
-							'<h2>'.$category['cat_title'].'</h2>'."\n";
+			$forStr .=	'<div class="bsk-pdf-category">'."\n";
+			if($show_cat_title){
+				$forStr .=	'<h2>'.$category['cat_title'].'</h2>'."\n";
+			}
 			//get pdf items in the category
 			$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `cat_id` = ".$category['id']." order by `title` ASC";
 			$pdf_items = $wpdb->get_results($sql, ARRAY_A);
@@ -97,7 +113,7 @@ class BSKPDFManagerCategory {
 				continue;
 			}
 			$forStr .= '<ul>'."\n";
-			$open_target_str = get_option($this->_bsk_pdf_manager_managment_obj->_bsk_pdf_manager_OBJ_settings_support->_bsk_pdf_manager_settings_name_open_target, '');
+			$open_target_str = get_option($this->_open_target_option_name, '');
 			if ($open_target_str){
 				$open_target_str = 'target="'.$open_target_str.'"';
 			}

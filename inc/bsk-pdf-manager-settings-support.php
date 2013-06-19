@@ -6,9 +6,9 @@ class BSKPDFManagerSettingsSupport {
 	var $_pdfs_db_tbl_name = '';
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
-	var $_bsk_pdf_manager_managment_obj = NULL;
-	
-	var $_bsk_pdf_manager_settings_name_open_target = '_bsk_pdf_manager_open_target';
+
+	var $_open_target_option_name = '';
+	var $_show_category_title_when_listing_pdfs = '';
    
 	public function __construct( $args ) {
 		global $wpdb;
@@ -17,7 +17,8 @@ class BSKPDFManagerSettingsSupport {
 		$this->_pdfs_db_tbl_name = $args['pdfs_db_tbl_name'];
 		$this->_pdfs_upload_path = $args['pdf_upload_path'];
 	    $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
-		$this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
+		$this->_open_target_option_name = $args['open_target_option_name'];
+		$this->_show_category_title_when_listing_pdfs = $args['show_category_title'];
 		
 		$this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
 		
@@ -25,10 +26,11 @@ class BSKPDFManagerSettingsSupport {
 	}
 	
 	function show_settings(){
-		$open_target = get_option($this->_bsk_pdf_manager_settings_name_open_target, '');
+		$open_target = get_option($this->_open_target_option_name, '');
+		$show_title = get_option($this->_show_category_title_when_listing_pdfs, false);
 		?>
         <div class="bsk_pdf_manager_settings">
-        	<h4>Open PDF Document</h4>
+        	<h4>Open PDF</h4>
             <div>
                 <ul class="bsk-details-form">
                     <li>
@@ -39,6 +41,15 @@ class BSKPDFManagerSettingsSupport {
                             <option value="_parent" <?php if ($open_target == '_parent') echo 'selected="selected"'; ?>>Load in the parent frameset</option>
                             <option value="_top" <?php if ($open_target == '_top') echo 'selected="selected"'; ?>>Load in the full body of the window</option>
                         </select>
+                    </li>
+                </ul>
+            </div>
+            <h4>PDF List</h4>
+            <div>
+                <ul class="bsk-details-form">
+                    <li>
+                        <label>Show category title ?</label>
+                        <input type="checkbox" name="bsk_pdf_manager_settings_show_cat_title" id="bsk_pdf_manager_settings_show_cat_title_id" <?php if($show_title) echo ' checked="checked"'; ?>/>
                     </li>
                 </ul>
             </div>
@@ -66,6 +77,11 @@ class BSKPDFManagerSettingsSupport {
 			return;
 		}
 		
-		update_option($this->_bsk_pdf_manager_settings_name_open_target, $data['bsk_pdf_manager_settings_target']);
+		update_option($this->_open_target_option_name, $data['bsk_pdf_manager_settings_target']);
+		if(isset($_POST['bsk_pdf_manager_settings_show_cat_title'])){
+			update_option($this->_show_category_title_when_listing_pdfs, true);
+		}else{
+			update_option($this->_show_category_title_when_listing_pdfs, false);
+		}
 	}
 }

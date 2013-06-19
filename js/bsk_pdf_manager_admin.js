@@ -1,7 +1,21 @@
 jQuery(document).ready( function($) {
 	
 	$("#bsk_pdf_manager_categories_id").change( function() {
+		var cat_id = $(this).val();
+		var new_action = $("#bsk-pdf-manager-pdfs-form-id").attr('action') + '&cat=' + cat_id;
+		
+		$("#bsk-pdf-manager-pdfs-form-id").attr('action', new_action);
+		
 		$("#bsk-pdf-manager-pdfs-form-id").submit();
+	});
+	
+	$("#doaction").click( function() {
+		var cat_id = $("#bsk_pdf_manager_categories_id").val();
+		var new_action = $("#bsk-pdf-manager-pdfs-form-id").attr('action') + '&cat=' + cat_id;
+		
+		$("#bsk-pdf-manager-pdfs-form-id").attr('action', new_action);
+		
+		return true;
 	});
 	
 	$("#bsk_pdf_manager_category_save").click( function() {
