@@ -152,38 +152,41 @@ class BSKPDFManagerPDF {
 			}
 		?>
         <h4>PDF Document</h4>
-        <div>
-            <ul class="bsk-details-form">
-                <li>
-                    <label>Titile:</label>
-                    <input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $pdf_obj_array['title']; ?>" maxlength="512" />
+        <p>
+            <table style="width:80%;">
+                <tr>
+                    <td style="width:150px;">Title:</td>
+                    <td><input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $pdf_obj_array['title']; ?>" maxlength="512" /></td>
+                </tr>
                 </li>
                 <?php if ($pdf_id > 0 && $file_url){ ?>
-                <li>
-                    <label>Old File:</label>
+                <tr>
+                    <td>Old File:</td>
+                    <td>
                     <a href="<?php echo $file_url; ?>" target="_blank"><?php echo $pdf_obj_array['file_name']; ?></a>
                     <input type="hidden" name="bsk_pdf_manager_pdf_file_old" id="bsk_pdf_manager_pdf_file_old_id" value="<?php echo $pdf_obj_array['file_name']; ?>" />
-                </li>
+                    </td>
+                </tr>
                 <?php } ?>
-                <li>
-                    <label>Upload new:</label>
-                    <input type="file" name="bsk_pdf_file" id="bsk_pdf_file_id" value="Browse" />
-                </li>
-                <li>
-                	<label>&nbsp;</label>
-                    <span class="bsk_description">Maximum file size: <?php echo $maximumUploaded; ?></span>
-                </li>
-                <li>
-                	<label>&nbsp;</label>
-                    <span class="bsk_description">Only <b>.pdf</b> allowed.</span>
-                </li>
-                <li>
+                <tr>
+                    <td>Upload new:</td>
+                    <td><input type="file" name="bsk_pdf_file" id="bsk_pdf_file_id" value="Browse" /></td>
+                </tr>
+                <tr>
+                	<td>&nbsp;</td>
+                    <td><span class="bsk_description">Maximum file size: <?php echo $maximumUploaded; ?></span></td>
+                </tr>
+                <tr>
+                	<td>&nbsp;</td>
+                    <td><span class="bsk_description">Only <b>.pdf</b> allowed.</span></td>
+                </tr>
+                <tr>
                 	<input type="hidden" name="bsk_pdf_manager_action" value="pdf_save" />
                     <input type="hidden" name="bsk_pdf_manager_pdf_id" value="<?php echo $pdf_id; ?>" />
                     <?php echo wp_nonce_field( plugin_basename( __FILE__ ), 'bsk_pdf_manager_pdf_save_oper_nonce', true, false ); ?>
-                </li>
-            </ul>
-          </div>
+                </tr>
+            </table>
+          </p>
 		</div><!-- end of <div class="rs_checklist_tmpls_tools_edit"> -->
 		<?php
 	}
@@ -267,11 +270,18 @@ class BSKPDFManagerPDF {
 			return false;
 		}
 		$extension = strtolower( end(explode(".", $file["name"])) );
-		if( $file["type"] != "application/pdf" || $extension != 'pdf' ){
+		if( $extension != 'pdf' ){
 			$message_id = 15;
 			return false;
 		}
-		$destinate_file_name = $destination_name_prefix.'_'.sanitize_file_name($file["name"]);
+		//check if PDF name is unicode or not
+		$upload_pdf_name = $file["name"];
+		if( strlen($upload_pdf_name) != strlen(utf8_decode($upload_pdf_name)) ){
+			$destinate_file_name = $destination_name_prefix.'_'.date('Y-m-d', current_time('timestamp')).'.pdf';
+		}else{
+			$destinate_file_name = $destination_name_prefix.'_'.$upload_pdf_name;
+		}
+		$destinate_file_name = strtoupper( $destinate_file_name );
 		$ret = move_uploaded_file($file["tmp_name"], $this->_pdfs_upload_path.$destinate_file_name);
 		if( !$ret ){
 			$message_id = 16;

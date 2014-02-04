@@ -12,6 +12,8 @@ class BSKPDFManagerCategory {
 	var $_plugin_pages_name = array();
 	var $_open_target_option_name = '';
 	var $_show_category_title_when_listing_pdfs = '';
+	var $_pdf_order_by_option_name = '';
+	var $_pdf_order_option_name = '';	
    
 	public function __construct( $args ) {
 		global $wpdb;
@@ -24,6 +26,8 @@ class BSKPDFManagerCategory {
 		$this->_plugin_pages_name = $args['pages_name_A'];
 		$this->_open_target_option_name = $args['open_target_option_name'];
 		$this->_show_category_title_when_listing_pdfs = $args['show_category_title'];
+		$this->_pdf_order_by_option_name = $args['pdf_order_by'];
+		$this->_pdf_order_option_name = $args['pdf_order'];		
 		
 		$this->_bsk_categories_page_name = $this->_plugin_pages_name['category'];
 		$this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
@@ -99,6 +103,9 @@ class BSKPDFManagerCategory {
 			return "";
 		}
 		
+		$order_by = get_option($this->_pdf_order_by_option_name, 'title');
+		$order = get_option($this->_pdf_order_option_name, 'ASC');
+		
 		$home_url = get_option('home');
 		$show_cat_title = get_option($this->_show_category_title_when_listing_pdfs, false);
 		foreach( $categories as $category){
@@ -107,18 +114,20 @@ class BSKPDFManagerCategory {
 				$forStr .=	'<h2>'.$category['cat_title'].'</h2>'."\n";
 			}
 			//get pdf items in the category
-			$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `cat_id` = ".$category['id']." order by `title` ASC";
+			$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `cat_id` = ".$category['id']." order by `$order_by` $order";
 			$pdf_items = $wpdb->get_results($sql, ARRAY_A);
 			if (count($pdf_items) < 1){
 				continue;
 			}
 			$forStr .= '<ul>'."\n";
 			$open_target_str = get_option($this->_open_target_option_name, '');
-			if ($open_target_str){
+			if( $open_target_str == '_blank' ){
 				$open_target_str = 'target="'.$open_target_str.'"';
+			}else{
+				$open_target_str = '';
 			}
 			foreach($pdf_items as $pdf_item){
-				if ( $pdf_item['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_item['file_name']) ){
+				if( $pdf_item['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_item['file_name']) ){
 					$file_url = $home_url.'/'.$this->_pdfs_upload_folder.$pdf_item['file_name'];
 					$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item['title'].'</a></li>'."\n";
 				}

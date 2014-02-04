@@ -14,6 +14,8 @@ class BSKPDFManagerDashboard {
 	
 	var $_bsk_open_target_option_name = '_bsk_pdf_manager_open_target';
 	var $_bsk_category_list_has_title = '_bsk_pdf_manager_category_list_has_title';
+	var $_bsk_pdf_order_by_option_name = '_bsk_pdf_manager_pdf_order_by_';
+	var $_bsk_pdf_order_option_name = '_bsk_pdf_manager_pdf_order_';
 	
 	var $_obj_init_args = array();
 
@@ -31,6 +33,8 @@ class BSKPDFManagerDashboard {
 		$this->_obj_init_args['pages_name_A'] = $arg['pages_name_A'];
 		$this->_obj_init_args['open_target_option_name'] = $this->_bsk_open_target_option_name;
 		$this->_obj_init_args['show_category_title'] = $this->_bsk_category_list_has_title;
+		$this->_obj_init_args['pdf_order_by'] = $this->_bsk_pdf_order_by_option_name;
+		$this->_obj_init_args['pdf_order'] = $this->_bsk_pdf_order_option_name;
 		
 		require_once( 'bsk-pdf-manager-categories.php' );
 		require_once( 'bsk-pdf-manager-category.php' );
@@ -194,12 +198,8 @@ class BSKPDFManagerDashboard {
 				<input type="hidden" name="page" value="bsk-pdf-manager-settings-support" />';
 				$this->_bsk_pdf_manager_OBJ_settings_support->show_settings();
 		echo '  <p style="margin-top:20px;"><input type="submit" id="bsk_pdf_manager_settings_save_form" class="button-primary" value="Save" /></p>'."\n";
-		echo '	</form>
-			  </div>';
-		
-		
-		echo '<div class="wrap">';
-			  $this->_bsk_pdf_manager_OBJ_settings_support->show_support();
+		echo '	</form>';
+		$this->_bsk_pdf_manager_OBJ_settings_support->show_support();
 		echo '</div>';
 	}
 	

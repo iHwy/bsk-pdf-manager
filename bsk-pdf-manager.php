@@ -3,7 +3,7 @@
 /*
 Plugin Name: BSK PDF Manager
 Description: Help you manager PDF documents. PDF documents can be filter by category. Support short code to show special PDF document or list all under special category. Widget display will be supported soon.
-Version: 1.2.0
+Version: 1.3
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -70,9 +70,6 @@ class BSKPDFManager {
 			add_action('admin_init', array(&$this, 'bsk_pdf_manager_admin_enqueue_scripts_css') );
 		}
 		
-		//create or update table
-		$this->bsk_pdf_manager_create_table();
-		
 		//include others class
 		require_once( 'inc/bsk-pdf-dashboard.php' );
 		
@@ -88,12 +85,15 @@ class BSKPDFManager {
 		//hooks
 		register_activation_hook(__FILE__, array($this, 'bsk_pdf_manager_activate') );
 		register_deactivation_hook( __FILE__, array($this, 'bsk_pdf_manager_deactivate') );
-		
+		register_uninstall_hook( __FILE__, 'BSKPDFManager::bsk_pdf_manager_uninstall' );
 		
 		add_action('init', array($this, 'bsk_pdf_manager_post_action'));
 	}
 	
 	function bsk_pdf_manager_activate(){
+		//create or update table
+		$this->bsk_pdf_manager_create_table();
+		
 		// Clear the permalinks
 		flush_rewrite_rules();
 	}
@@ -103,9 +103,12 @@ class BSKPDFManager {
 		flush_rewrite_rules();
 	}
 	
+	function bsk_pdf_manager_uninstall(){
+		BSKPDFManager::bsk_pdf_manager_remove_table();
+	}
+	
 	function bsk_pdf_manager_admin_enqueue_scripts_css(){
 		wp_enqueue_script('jquery');
-		wp_enqueue_style( 'bsk-pdf-manager-admin', plugins_url('css/bsk_pdf_manager_admin.css', __FILE__) );
 		wp_enqueue_script( 'bsk-pdf-manager-admin', plugins_url('js/bsk_pdf_manager_admin.js', __FILE__), array('jquery') );
 	}
 	
@@ -158,7 +161,7 @@ class BSKPDFManager {
 		}
 		
 		$table_name = $this->_bsk_pdf_manager_cats_tbl_name;
-		$sql = "CREATE TABLE " . $table_name . " (
+		$sql = "CREATE TABLE IF NOT EXISTS " . $table_name . " (
 				      `id` int(11) NOT NULL AUTO_INCREMENT,
 					  `cat_title` varchar(512) NOT NULL,
 					  `last_date` datetime DEFAULT NULL,
@@ -167,7 +170,7 @@ class BSKPDFManager {
 		dbDelta($sql);
 		
 		$table_name = $this->_bsk_pdf_manager_pdfs_tbl_name;
-		$sql = "CREATE TABLE " . $table_name . " (
+		$sql = "CREATE TABLE IF NOT EXISTS " . $table_name . " (
 				     `id` int(11) NOT NULL AUTO_INCREMENT,
 					  `cat_id` int(11) NOT NULL,
 					  `title` varchar(512) DEFAULT NULL,
@@ -176,6 +179,16 @@ class BSKPDFManager {
 					  PRIMARY KEY (`id`)
 				) $charset_collate;";
 		dbDelta($sql);
+	}
+	
+	function bsk_pdf_manager_remove_table(){
+		global $wpdb;
+		
+        $table_cats = $wpdb->prefix."bsk_pdf_manager_cats";
+		$table_pdfs = $wpdb->prefix."bsk_pdf_manager_pdfs";
+		
+		$wpdb->query("DROP TABLE IF EXISTS $table_cats");
+		$wpdb->query("DROP TABLE IF EXISTS $table_pdfs");		
 	}
 	
 	function bsk_pdf_manager_post_action(){
