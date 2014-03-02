@@ -1,7 +1,6 @@
 === BSK PDF Manager ===
 Contributors: bannersky
-Donate link: http://www.bannersky.com/donate
-Plugin URI: http://www.bannersky.com/html/bsk-pdf-manager.html
+Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
 Tested up to: 3.8.1
