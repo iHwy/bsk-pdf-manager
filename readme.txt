@@ -24,7 +24,7 @@ The plugin has a very easy admin page that allows you to manage categories and P
 
 == Frequently Asked Questions ==
 
-Please visit <a href="http://www.bannersky.com/html/bsk-pdf-manager.html">http://www.bannersky.com/html/bsk-pdf-manager.html</a> for documents or support.
+Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bannersky.com/bsk-pdf-manager/</a> for documents or support.
 
 == Screenshots ==
 
