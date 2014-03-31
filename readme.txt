@@ -1,10 +1,11 @@
 === BSK PDF Manager ===
 Contributors: bannersky
+Donate link: http://www.bannersky.com/donate
 Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
 Tested up to: 3.8.1
-Stable tag: 1.3
+Stable tag: 1.3.1
 
 == Description ==
 
@@ -12,12 +13,14 @@ The plugin help you manage your PDF documents in WordPress. You may upload by ca
 
 It is easy to use. You just need copy the shortcodes into the page/post where you want to show. Then it will show the link in your page/post.
 
+Widget is supported now! You may show PDFs list in a widget area.
+
 
 == Installation ==
 
-Activate the plugin then you can use either a shortcode [bsk-pdf-manager-pdf id=xx] to show the link of a special PDF document of id xx.
+Activate the plugin then you can use either a shortcode [bsk-pdf-manager-pdf id="1"] to show the link of a special PDF document of id 1 or [bsk-pdf-manager-pdf id="1,2, 3"] to show several PDF documents.
 
-Or you may use [bsk-pdf-manager-list-category id=xx] to show all PDF documents under the category of id xx.
+You may use [bsk-pdf-manager-list-category id="1"] to show all PDF documents under the category of id 1 or [bsk-pdf-manager-list-category id="1,2,3"] to show all PDFs under categories of id 1, 2, 3.
 
 The plugin has a very easy admin page that allows you to manage categories and PDF documents.
 
@@ -33,6 +36,17 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 
 == Changelog ==
+
+1.3.1
+
+* Widget supported now.
+
+* Support wordPress site with subdirectory installation.
+
+* Changed special PDF list from &lt;p&gt; tag to &lt;li&gt; tag, only return PDF link is possilbe. Support multiple PDF id and category id, so show all PDFs in one list is possible.
+
+* Changed backend interface.
+
 1.3
 
 * Support PDF list order by Date, Title and File Name.

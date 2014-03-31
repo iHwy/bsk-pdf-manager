@@ -109,7 +109,7 @@ class BSKPDFManagerDashboard {
 					<h2>BSK PDF Categories<a href="'.$category_add_new_page.'" class="add-new-h2">Add New</a></h2>
 					<form id="bsk-pdf-manager-categories-form-id" method="post">
 						<input type="hidden" name="page" value="bsk-pdf-manager" />';
-						$this->_bsk_pdf_manager_OBJ_categories->search_box( 'search', 'bsk-pdf-manager' );
+						//$this->_bsk_pdf_manager_OBJ_categories->search_box( 'search', 'bsk-pdf-manager' );
 						$this->_bsk_pdf_manager_OBJ_categories->views();
 						$this->_bsk_pdf_manager_OBJ_categories->display();
 			echo '  </form>
@@ -151,8 +151,13 @@ class BSKPDFManagerDashboard {
 		if ($lists_curr_view == 'list'){
 			//Fetch, prepare, sort, and filter our data...
 			$this->_bsk_pdf_manager_OBJ_pdfs->prepare_items();
+			
+			$current_category_id = $_REQUEST['cat'];
 			$add_new_page = admin_url( 'admin.php?page=bsk-pdf-manager-pdfs' );
 			$add_new_page = add_query_arg( 'view', 'addnew', $add_new_page );
+			if( $current_category_id ){
+				$add_new_page = add_query_arg( 'cat', $current_category_id, $add_new_page );
+			}
 	
 			echo '<div class="wrap">
 					<div id="icon-edit" class="icon32"><br/></div>
@@ -160,7 +165,7 @@ class BSKPDFManagerDashboard {
 					<form id="bsk-pdf-manager-pdfs-form-id" method="post" action="'.admin_url( 'admin.php?page=bsk-pdf-manager-pdfs' ).'">
 						<input type="hidden" name="page" value="bsk-pdf-manager-pdfs" />
 						<input type="hidden" name="view" value="list" />';
-						$this->_bsk_pdf_manager_OBJ_pdfs->search_box( 'search', 'bsk-pdf-manager-pdfs' );
+						//$this->_bsk_pdf_manager_OBJ_pdfs->search_box( 'search', 'bsk-pdf-manager-pdfs' );
 						$this->_bsk_pdf_manager_OBJ_pdfs->views();
 						$this->_bsk_pdf_manager_OBJ_pdfs->display();
 			echo '  </form>

@@ -3,7 +3,7 @@
 /*
 Plugin Name: BSK PDF Manager
 Description: Help you manager PDF documents. PDF documents can be filter by category. Support short code to show special PDF document or list all under special category. Widget display will be supported soon.
-Version: 1.3
+Version: 1.3.1
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
 
-
+require_once('inc/bsk-pdf-manager-widget.php');
 class BSKPDFManager {
 
 	var $_bsk_pdf_manager_upload_folder = 'wp-content/uploads/bsk-pdf-manager/';
@@ -45,30 +45,13 @@ class BSKPDFManager {
 		
 		$this->_bsk_pdf_manager_cats_tbl_name = $wpdb->prefix.$this->_bsk_pdf_manager_cats_tbl_name;
 		$this->_bsk_pdf_manager_pdfs_tbl_name = $wpdb->prefix.$this->_bsk_pdf_manager_pdfs_tbl_name;
-
-
 		$this->_bsk_pdf_manager_upload_path = str_replace("\\", "/", $this->_bsk_pdf_manager_upload_path);
-		//create folder to upload 
-		$_bsk_pdf_manager_upload_folder = $this->_bsk_pdf_manager_upload_path.$this->_bsk_pdf_manager_upload_folder;
-		if ( !is_dir($_bsk_pdf_manager_upload_folder) ) {
-			if ( !wp_mkdir_p( $_bsk_pdf_manager_upload_folder ) ) {
-				$this->_bsk_pdf_manager_admin_notice_message['upload_folder_missing']  = array( 'message' => 'Directory <strong>' . $_bsk_pdf_manager_upload_folder . '</strong> can not be created. Please create it first yourself.',
-				                                                                                'type' => 'ERROR');
-			}
-		}
-		
-		if ( !is_writeable( $_bsk_pdf_manager_upload_folder ) ) {
-			$msg  = 'Directory <strong>' . $this->_bsk_pdf_manager_upload_folder . '</strong> is not writeable ! ';
-			$msg .= 'Check <a href="http://codex.wordpress.org/Changing_File_Permissions">http://codex.wordpress.org/Changing_File_Permissions</a> for how to set the permission.';
-
-			$this->_bsk_pdf_manager_admin_notice_message['upload_folder_not_writeable']  = array( 'message' => $msg,
-			                                                                                      'type' => 'ERROR');
-		}
 
 		if(is_admin()) {
 			add_action('admin_notices', array($this, 'bsk_pdf_manager_admin_notice') );
 			add_action('admin_init', array(&$this, 'bsk_pdf_manager_admin_enqueue_scripts_css') );
 		}
+		add_action( 'widgets_init', create_function( '', 'register_widget( "BSKPDFManagerWidget" );' ) );
 		
 		//include others class
 		require_once( 'inc/bsk-pdf-dashboard.php' );
@@ -88,6 +71,8 @@ class BSKPDFManager {
 		register_uninstall_hook( __FILE__, 'BSKPDFManager::bsk_pdf_manager_uninstall' );
 		
 		add_action('init', array($this, 'bsk_pdf_manager_post_action'));
+		
+		$this->bsk_pdf_create_upload_folder_and_set_secure();
 	}
 	
 	function bsk_pdf_manager_activate(){
@@ -194,6 +179,30 @@ class BSKPDFManager {
 	function bsk_pdf_manager_post_action(){
 		if( isset( $_POST['bsk_pdf_manager_action'] ) && strlen($_POST['bsk_pdf_manager_action']) >0 ) {
 			do_action( 'bsk_pdf_manager_' . $_POST['bsk_pdf_manager_action'], $_POST );
+		}
+	}
+	
+	function bsk_pdf_create_upload_folder_and_set_secure(){
+		//create folder to upload 
+		$_bsk_pdf_manager_upload_folder_path = $this->_bsk_pdf_manager_upload_path.$this->_bsk_pdf_manager_upload_folder;
+		if ( !is_dir($_bsk_pdf_manager_upload_folder_path) ) {
+			if ( !wp_mkdir_p( $_bsk_pdf_manager_upload_folder_path ) ) {
+				$this->_bsk_pdf_manager_admin_notice_message['upload_folder_missing']  = array( 'message' => 'Directory <strong>' . $_bsk_pdf_manager_upload_folder . '</strong> can not be created. Please create it first yourself.',
+				                                                                                'type' => 'ERROR');
+			}
+		}
+		
+		if ( !is_writeable( $_bsk_pdf_manager_upload_folder_path ) ) {
+			$msg  = 'Directory <strong>' . $this->_bsk_pdf_manager_upload_folder_path . '</strong> is not writeable ! ';
+			$msg .= 'Check <a href="http://codex.wordpress.org/Changing_File_Permissions">http://codex.wordpress.org/Changing_File_Permissions</a> for how to set the permission.';
+
+			$this->_bsk_pdf_manager_admin_notice_message['upload_folder_not_writeable']  = array( 'message' => $msg,
+			                                                                                      'type' => 'ERROR');
+		}
+
+		//copy file to upload foloder
+		if( !file_exists($_bsk_pdf_manager_upload_folder_path.'/index.php') ){
+			copy( dirname(__FILE__).'/assets/index.php', $_bsk_pdf_manager_upload_folder_path.'/index.php' );
 		}
 	}
 }

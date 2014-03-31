@@ -42,6 +42,9 @@ class BSKPDFManagerPDFs extends WP_List_Table {
             case 'file_name':
                 echo $item['file_name'];
                 break;
+			case 'category':
+				echo $item['category'];
+				break;
 			case 'shortcode':
 				echo $item['shortcode'];
 				break;
@@ -66,6 +69,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 							'id'				=> 'ID',
 							'title'     		=> 'Title',
 							'file_name'     	=> 'File Name',
+							'category'     		=> 'Category',
 							'shortcode'     	=> 'Shortcode',
 							'last_date' 		=> 'Last Date'
 						);
@@ -73,23 +77,20 @@ class BSKPDFManagerPDFs extends WP_List_Table {
         return $columns;
     }
 	
-	function get_sortable_columns() {
-		$c = array(
-					'title' => 'title',
-					'last_date'    => 'last_date'
-					);
+	function extra_tablenav( $which ) {
+		if ($which == 'bottom'){
+			return;
+		}
 		
-		return $c;
-	}
-   
-    function get_views() {
 		global $wpdb;
 		
 		$sql = 'SELECT * FROM '.$this->_categories_db_tbl_name;
 		$categoreies = $wpdb->get_results($sql);
 		
-		$select_str_header = '<select name="bsk_pdf_manager_categories" id="bsk_pdf_manager_categories_id">';
-		$select_str_footer = '</select>';
+		$select_str_header = '<div class="alignleft actions">
+								<select name="bsk_pdf_manager_categories" id="bsk_pdf_manager_categories_id">';
+		$select_str_footer = '	</select>
+							  </div>';
 		
 		if (!$categoreies || count($categoreies) < 1){
 			$select_str_body = '<option value="0">Please add category first</option>';
@@ -107,11 +108,18 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 				}
 			}
 		}
+		echo $select_str_header.$select_str_body.$select_str_footer;
+	}
+	
+	function get_sortable_columns() {
+		$c = array(
+					'title' 	=> 'title',
+					'category'  => 'cat_title',
+					'last_date' => 'last_date'
+					);
 		
-		$views = array('filter' => $select_str_header.$select_str_body.$select_str_footer);
-		
-        return $views;
-    }
+		return $c;
+	}
    
     function get_bulk_actions() {
     
@@ -150,14 +158,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
     function get_data() {
 		global $wpdb;
 		
-        // check to see if we are searching
-        if( isset( $_POST['s'] ) ) {
-            $search = trim( $_POST['s'] );
-        }
 		$current_category_id = $_REQUEST['cat'];
-		if ($current_category_id < 1){
-			$current_category_id = $_POST['bsk_pdf_manager_pdf_edit_categories'];
-		}
 		if ( isset( $_REQUEST['orderby'] ) ){
 			$orderby = $_REQUEST['orderby'];
 		}
@@ -165,20 +166,22 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 			$order = $_REQUEST['order'];
 		}
 		
-		$sql = 'SELECT * FROM '.
-		       $this->_pdfs_db_tbl_name.' AS l';
-
-		$search_fields = ' l.title LIKE "%'.$search.'%"';
-						 
-		$whereCase = $search ? $search_fields : '';
-		$orderCase = ' ORDER BY l.last_date DESC';
-		if ( $orderby ){
-			$orderCase = ' ORDER BY l.'.$orderby.' '.$order;
+		$sql = 'SELECT l.*, c.cat_title FROM '.$this->_pdfs_db_tbl_name.' AS l INNER JOIN '.$this->_categories_db_tbl_name.' AS c ON l.cat_id = c.id ';
+		
+		$whereCase = ' WHERE 1';
+		if( $current_category_id ){
+			$whereCase = ' WHERE l.cat_id = '.$current_category_id;
 		}
-		$whereCase = $whereCase ? ' WHERE l.cat_id = '.$current_category_id.' AND '.$whereCase : ' WHERE l.cat_id = '.$current_category_id;
+		$orderCase = ' ORDER BY l.last_date DESC';
+		if( $orderby == 'cat_title' ){
+			$orderCase = ' ORDER BY c.cat_title '.$order.', l.last_date DESC';
+		}else if( $orderby == 'title' ){
+			$orderCase = ' ORDER BY l.title '.$order.', l.last_date DESC';
+		}else if( $orderby == 'last_date' ){
+			$orderCase = ' ORDER BY l.last_date '.$order;
+		}
 
 		$all_pdfs = $wpdb->get_results($sql.$whereCase.$orderCase);
-		
 		if (!$all_pdfs || count($all_pdfs) < 1){
 			return NULL;
 		}
@@ -191,7 +194,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 			$edit_url = add_query_arg('pdfid', $pdf_record->id, $edit_url);
 			$file_str = '';
 			if( $pdf_record->file_name && file_exists($this->_pdfs_upload_path.$pdf_record->file_name) ){
-				$file_url = get_option('home').'/'.$this->_pdfs_upload_folder.$pdf_record->file_name;
+				$file_url = site_url().'/'.$this->_pdfs_upload_folder.$pdf_record->file_name;
 				$file_str =  '<a href="'.$file_url.'" target="_blank">'.$pdf_record->file_name.'</a>';
 			}
 			$shortcode_str = $file_str ? '[bsk-pdf-manager-pdf id="'.$pdf_record->id.'"]' : '';
@@ -199,6 +202,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 								'id' 				=> $pdf_record->id,
 								'title'     		=> '<a href="'.$edit_url.'">'.$pdf_record->title.'</a>',
 								'file_name'     	=> $file_str,
+								'category'			=> $pdf_record->cat_title,
 								'shortcode'			=> $shortcode_str,
 								'last_date' 		=> $pdf_record->last_date,
 								 );
@@ -251,6 +255,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 							'id'				=> 'ID',
 							'title'     		=> 'Title',
 							'file_name'     	=> 'File Name',
+							'category'     		=> 'Category',
 							'shortcode'     	=> 'Shortcode',
 							'last_date' 		=> 'Last Date'
 						);

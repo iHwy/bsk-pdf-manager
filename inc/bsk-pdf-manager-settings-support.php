@@ -83,6 +83,10 @@ class BSKPDFManagerSettingsSupport {
             <ul>
                 <li><a href="http://www.bannersky.com/html/bsk-pdf-manager.html" target="_blank">Visit the Support Centre</a> if you have a question on using this plugin</li>
             </ul>
+             <h4>Donate</h4>
+            <ul>
+                <li>If you like this plugin and would like to <a href="http://www.bannersky.com/donate/" target="_blank">buy me a coffee</a>, it really will encourage me to keep developing.</li>
+            </ul>
         </div>
     	<?php
 	}

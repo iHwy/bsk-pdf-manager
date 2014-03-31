@@ -33,7 +33,6 @@ class BSKPDFManagerCategory {
 		$this->_pdfs_upload_path = $this->_pdfs_upload_path.$this->_pdfs_upload_folder;
 		
 		add_action('bsk_pdf_manager_category_save', array($this, 'bsk_pdf_manager_category_save_fun'));
-		
 		add_shortcode('bsk-pdf-manager-list-category', array($this, 'bsk_pdf_manager_list_pdfs_by_cat') );
 	}
 	
@@ -95,18 +94,38 @@ class BSKPDFManagerCategory {
 	function bsk_pdf_manager_list_pdfs_by_cat($atts, $content){
 		global $wpdb;
 		
-		$cat_id = $atts['id'];
-	
-		$sql = "SELECT * FROM `".$this->_categories_db_tbl_name."` WHERE id = $cat_id ORDER BY `cat_title` ASC";
+		extract( shortcode_atts( array('id' => ''), $atts ) );
+		
+		//id string
+		$ids_string = trim($id);
+		if( !$ids_string ){
+			return '';
+		}
+		if( $ids_string && is_string($ids_string) ){
+			$ids_array = explode(',', $ids_string);
+			foreach($ids_array as $key => $pdf_id){
+				$pdf_id = intval(trim($pdf_id));
+				if( is_int($pdf_id) == false ){
+					unset($ids_array[$key]);
+				}
+				$ids_array[$key] = $pdf_id;
+			}
+		}
+		if( is_array($ids_array) == false || count($ids_array) < 1 ){
+			return '';
+		}
+		$ids_string = implode(',', $ids_array);
+		$ids_string = trim($ids_string, ',');
+		
+		$sql = 'SELECT * FROM `'.$this->_categories_db_tbl_name.'` WHERE id IN('.$ids_string.') ORDER BY `cat_title` ASC';
 		$categories = $wpdb->get_results($sql, ARRAY_A);
 		if (count($categories) < 1) {
-			return "";
+			return '';
 		}
 		
 		$order_by = get_option($this->_pdf_order_by_option_name, 'title');
 		$order = get_option($this->_pdf_order_option_name, 'ASC');
-		
-		$home_url = get_option('home');
+		$home_url = site_url();
 		$show_cat_title = get_option($this->_show_category_title_when_listing_pdfs, false);
 		foreach( $categories as $category){
 			$forStr .=	'<div class="bsk-pdf-category">'."\n";
@@ -119,7 +138,7 @@ class BSKPDFManagerCategory {
 			if (count($pdf_items) < 1){
 				continue;
 			}
-			$forStr .= '<ul>'."\n";
+			$forStr .= '<ul class="bsk-special-pdfs-container">'."\n";
 			$open_target_str = get_option($this->_open_target_option_name, '');
 			if( $open_target_str == '_blank' ){
 				$open_target_str = 'target="'.$open_target_str.'"';
@@ -137,8 +156,6 @@ class BSKPDFManagerCategory {
 			$forStr .=  '</div>'."\n";
 		}
 	
-		
 		return $forStr;
 	}
-
 }
