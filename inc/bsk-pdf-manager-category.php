@@ -136,6 +136,7 @@ class BSKPDFManagerCategory {
 			$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `cat_id` = ".$category['id']." order by `$order_by` $order";
 			$pdf_items = $wpdb->get_results($sql, ARRAY_A);
 			if (count($pdf_items) < 1){
+				$forStr .=  '</div>'."\n";
 				continue;
 			}
 			$forStr .= '<ul class="bsk-special-pdfs-container">'."\n";
