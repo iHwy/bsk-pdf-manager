@@ -75,6 +75,7 @@ class BSKPDFManagerCategory {
 		$title = trim($data['cat_title']);
 		$last_date = date( 'Y-m-d H:i:s', current_time('timestamp') );
 		
+		$quotes_sybase = strtolower(ini_get('magic_quotes_sybase'));
 		if (get_magic_quotes_gpc() || empty($quotes_sybase) || $quotes_sybase === 'off'){
 			$title = stripcslashes($title); 
 		}
@@ -94,9 +95,19 @@ class BSKPDFManagerCategory {
 	function bsk_pdf_manager_list_pdfs_by_cat($atts, $content){
 		global $wpdb;
 		
-		extract( shortcode_atts( array('id' => ''), $atts ) );
+		extract( shortcode_atts( array('id' => '', 
+									   'orderby' => '', 
+									   'order' => '', 
+									   'target' => '', 
+									   'showcattitle' => ''), 
+								  $atts ) );
+		$show_cat_title = false;
+		if( $showcattitle && is_string($showcattitle) && $showcattitle == "yes" ){
+			$show_cat_title = true;
+		}
 		
-		//id string
+		//organise id array
+		$ids_array = array();
 		$ids_string = trim($id);
 		if( !$ids_string ){
 			return '';
@@ -111,49 +122,72 @@ class BSKPDFManagerCategory {
 				$ids_array[$key] = $pdf_id;
 			}
 		}
-		if( is_array($ids_array) == false || count($ids_array) < 1 ){
+		if( !is_array($ids_array) || count($ids_array) < 1 ){
 			return '';
 		}
-		$ids_string = implode(',', $ids_array);
-		$ids_string = trim($ids_string, ',');
-		
-		$sql = 'SELECT * FROM `'.$this->_categories_db_tbl_name.'` WHERE id IN('.$ids_string.') ORDER BY `cat_title` ASC';
-		$categories = $wpdb->get_results($sql, ARRAY_A);
-		if (count($categories) < 1) {
+	
+		$sql = 'SELECT * FROM `'.$this->_categories_db_tbl_name.'` WHERE id IN('.implode(',', $ids_array).') ORDER BY `cat_title` ASC';
+		$categories = $wpdb->get_results($sql);
+		if( !$categories || !is_array($categories) || count($categories) < 1 ){
 			return '';
 		}
 		
-		$order_by = get_option($this->_pdf_order_by_option_name, 'title');
-		$order = get_option($this->_pdf_order_option_name, 'ASC');
+		//organise category by id
+		$categories_id_as_key = array();
+		foreach( $categories as $category_obj ){
+			$categories_id_as_key[$category_obj->id] = $category_obj;
+		}
+
+		//process open target
+		$open_target_str = '';
+		if( $target == '_blank' ){
+			$open_target_str = 'target="'.$open_target_str.'"';
+		}
+		
+		//process order
+		$order_by_str = ' ORDER BY `title`'; //default set to title
+		$order_str = ' ASC';
+		if( $orderby == 'title' ){
+			//default
+		}else if( $orderby == 'filename' ){
+			$order_by_str = ' ORDER BY `file_name`';
+		}else if( $orderby == 'date' ){
+			$order_by_str = ' ORDER BY `last_date`';
+		}
+		if( trim($order) == 'DESC' ){
+			$order_str = ' DESC';
+		}
+
 		$home_url = site_url();
-		$show_cat_title = get_option($this->_show_category_title_when_listing_pdfs, false);
-		foreach( $categories as $category){
-			$forStr .=	'<div class="bsk-pdf-category">'."\n";
-			if($show_cat_title){
-				$forStr .=	'<h2>'.$category['cat_title'].'</h2>'."\n";
+		foreach( $ids_array as $category_id ){ //order category by id sequence
+			
+			if( !isset($categories_id_as_key[$category_id]) ){
+				continue;
 			}
+			$forStr .=	'<div class="bsk-pdf-category">'."\n";
+			
+			if( $show_cat_title ){
+				$forStr .=	'<h2>'.$categories_id_as_key[$category_id]->cat_title.'</h2>'."\n";
+			}
+			
 			//get pdf items in the category
-			$sql = "SELECT * FROM `".$this->_pdfs_db_tbl_name."` WHERE `cat_id` = ".$category['id']." order by `$order_by` $order";
-			$pdf_items = $wpdb->get_results($sql, ARRAY_A);
-			if (count($pdf_items) < 1){
+			$sql = 'SELECT * FROM `'.$this->_pdfs_db_tbl_name.'` '.
+				   'WHERE `cat_id` = '.$category_id.' '.
+				   $order_by_str.$order_str;
+			$pdf_items_results = $wpdb->get_results( $sql );
+			if( !$pdf_items_results || !is_array($pdf_items_results) || count($pdf_items_results) < 1 ){
 				$forStr .=  '</div>'."\n";
 				continue;
 			}
 			$forStr .= '<ul class="bsk-special-pdfs-container">'."\n";
-			$open_target_str = get_option($this->_open_target_option_name, '');
-			if( $open_target_str == '_blank' ){
-				$open_target_str = 'target="'.$open_target_str.'"';
-			}else{
-				$open_target_str = '';
-			}
-			foreach($pdf_items as $pdf_item){
-				if( $pdf_item['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_item['file_name']) ){
-					$file_url = $home_url.'/'.$this->_pdfs_upload_folder.$pdf_item['file_name'];
-					$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item['title'].'</a></li>'."\n";
+			foreach($pdf_items_results as $pdf_item_obj ){
+				if( $pdf_item_obj->file_name && file_exists($this->_pdfs_upload_path.$pdf_item_obj->file_name) ){
+					$file_url = $home_url.'/'.$this->_pdfs_upload_folder.$pdf_item_obj->file_name;
+					$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item_obj->title.'</a></li>'."\n";
 				}
 			}
 			$forStr .= '</ul>'."\n";
-
+			
 			$forStr .=  '</div>'."\n";
 		}
 	

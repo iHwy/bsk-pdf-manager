@@ -198,13 +198,15 @@ class BSKPDFManagerDashboard {
 			
 		echo '<div class="wrap">
 				<div id="icon-edit" class="icon32"><br/></div>
-				<h2>BSK PDF Settings & Support</h2>
-				<form id="bsk-pdf-manager-settings-form-id" method="post" enctype="multipart/form-data">
-				<input type="hidden" name="page" value="bsk-pdf-manager-settings-support" />';
-				$this->_bsk_pdf_manager_OBJ_settings_support->show_settings();
-		echo '  <p style="margin-top:20px;"><input type="submit" id="bsk_pdf_manager_settings_save_form" class="button-primary" value="Save" /></p>'."\n";
-		echo '	</form>';
+				<h2>BSK PDF Settings & Support</h2>';
+				
+		//echo '	<form id="bsk-pdf-manager-settings-form-id" method="post" enctype="multipart/form-data">';
+		//echo '	<input type="hidden" name="page" value="bsk-pdf-manager-settings-support" />';
+		//echo '  <p style="margin-top:20px;"><input type="submit" id="bsk_pdf_manager_settings_save_form" class="button-primary" value="Save" /></p>'."\n";
+		//echo '	</form>';
+		
 		$this->_bsk_pdf_manager_OBJ_settings_support->show_support();
+		
 		echo '</div>';
 	}
 	

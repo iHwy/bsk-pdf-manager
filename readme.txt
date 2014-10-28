@@ -4,8 +4,8 @@ Donate link: http://www.bannersky.com/donate
 Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
-Tested up to: 3.9.1
-Stable tag: 1.3.2
+Tested up to: 4.0
+Stable tag: 1.3.3
 
 == Description ==
 
@@ -36,6 +36,10 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 
 == Changelog ==
+
+1.3.3
+
+* Changed order by parameter, now you may include orderby="title" or orderby="filename" or orderby="date" to order all PDF, also can be order by PDFs' id sequence.
 
 1.3.2
 

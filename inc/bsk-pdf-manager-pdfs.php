@@ -71,7 +71,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 							'file_name'     	=> 'File Name',
 							'category'     		=> 'Category',
 							'shortcode'     	=> 'Shortcode',
-							'last_date' 		=> 'Last Date'
+							'last_date' 		=> 'Date'
 						);
         
         return $columns;
