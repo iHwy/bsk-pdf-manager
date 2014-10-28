@@ -81,7 +81,7 @@ class BSKPDFManagerSettingsSupport {
 		<div class="bsk_pdf_manager_support">
         	<h4>Plugin Support Centre</h4>
             <ul>
-                <li><a href="http://www.bannersky.com/html/bsk-pdf-manager.html" target="_blank">Visit the Support Centre</a> if you have a question on using this plugin</li>
+                <li><a href="http://www.bannersky.com/bsk-pdf-manager/" target="_blank">Visit the Support Centre</a> if you have a question on using this plugin</li>
             </ul>
              <h4>Donate</h4>
             <ul>
