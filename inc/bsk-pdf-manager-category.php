@@ -141,7 +141,7 @@ class BSKPDFManagerCategory {
 		//process open target
 		$open_target_str = '';
 		if( $target == '_blank' ){
-			$open_target_str = 'target="'.$open_target_str.'"';
+			$open_target_str = 'target="_blank"';
 		}
 		
 		//process order

@@ -37,6 +37,10 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 == Changelog ==
 
+1.3.4
+
+* Fixed a small bug.
+
 1.3.3
 
 * Changed order by parameter, now you may include orderby="title" or orderby="filename" or orderby="date" to order all PDF, also can be order by PDFs' id sequence.
