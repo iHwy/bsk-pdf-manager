@@ -1,11 +1,11 @@
 === BSK PDF Manager ===
 Contributors: bannersky
-Donate link: http://www.bannersky.com/donate
+Donate link: http://www.bannersky.com/donate/
 Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
-Tested up to: 4.0
-Stable tag: 1.3.3
+Tested up to: 4.1.1
+Stable tag: 1.3.5
 
 == Description ==
 
@@ -36,6 +36,16 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 
 == Changelog ==
+
+1.3.5
+
+* Fixed a typo.
+
+* Support out PDFs in a dropdown(select).
+
+* Make date for category and PDF item editable.
+
+* Support setting the number of most recent PDFs.
 
 1.3.4
 

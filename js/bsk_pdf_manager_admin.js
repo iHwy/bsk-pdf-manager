@@ -36,7 +36,7 @@ jQuery(document).ready( function($) {
 		if (category < 1){
 			alert('Please select category.');
 			$("#bsk_pdf_manager_pdf_edit_categories_id").focus();
-			return fasle;
+			return false;
 		}
 		
 		//check title
@@ -73,5 +73,7 @@ jQuery(document).ready( function($) {
 		$("#bsk-pdf-manager-pdfs-form-id").submit();
 	});
 	
-	
+	$(".bsk-date").datepicker({
+        dateFormat : 'yy-mm-dd'
+    });
 });

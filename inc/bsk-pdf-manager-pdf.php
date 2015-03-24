@@ -106,12 +106,14 @@ class BSKPDFManagerPDF {
 		$sql = 'SELECT * FROM '.$this->_categories_db_tbl_name;
 		$categories = $wpdb->get_results( $sql );
 		
+		$pdf_date = date('Y-m-d', current_time('timestamp'));
 		$pdf_obj_array = array();
 		if ($pdf_id > 0){
 			$sql = 'SELECT * FROM '.$this->_pdfs_db_tbl_name.' WHERE id = '.$pdf_id;
 			$pdfs_obj_array = $wpdb->get_results( $sql );
 			if (count($pdfs_obj_array) > 0){
 				$pdf_obj_array = (array)$pdfs_obj_array[0];
+				$pdf_date = date('Y-m-d', strtotime($pdf_obj_array['last_date']));
 			}
 		}
 		$category_id = $_REQUEST['cat'];
@@ -121,20 +123,6 @@ class BSKPDFManagerPDF {
 
 		?>
         <div class="bsk_pdf_manager_pdf_edit">
-		<h4>Please select category</h4>
-		<select name="bsk_pdf_manager_pdf_edit_categories" id="bsk_pdf_manager_pdf_edit_categories_id">
-        <option value="0">Please select category</option>
-        <?php 
-		foreach($categories as $category){ 
-			if ($category->id == $category_id){
-				echo '<option value="'.$category->id.'" selected="selected">'.$category->cat_title.'</option>';
-			}else{
-				echo '<option value="'.$category->id.'">'.$category->cat_title.'</option>';
-			}
-		} 
-		?>
-        </select>
-        
         <?php
 			$u_bytes = $this->bsk_pdf_manager_pdf_convert_hr_to_bytes( ini_get( 'upload_max_filesize' ) );
 			$p_bytes = $this->bsk_pdf_manager_pdf_convert_hr_to_bytes( ini_get( 'post_max_size' ) );
@@ -150,35 +138,63 @@ class BSKPDFManagerPDF {
 				$file_str = '';
 			}
 		?>
-        <h4>PDF Document</h4>
         <p>
             <table style="width:80%;">
+            	<tr>
+                    <td style="width:150px;">Category:</td>
+                    <td>
+                    	<select name="bsk_pdf_manager_pdf_edit_categories" id="bsk_pdf_manager_pdf_edit_categories_id" style="width:350px;">
+                        <option value="0">Please select category</option>
+                        <?php 
+                        foreach($categories as $category){ 
+                            if ($category->id == $category_id){
+                                echo '<option value="'.$category->id.'" selected="selected">'.$category->cat_title.'</option>';
+                            }else{
+                                echo '<option value="'.$category->id.'">'.$category->cat_title.'</option>';
+                            }
+                        } 
+                        ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>
                     <td style="width:150px;">Title:</td>
-                    <td><input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $pdf_obj_array['title']; ?>" maxlength="512" /></td>
+                    <td>
+                    	<input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $pdf_obj_array['title']; ?>" maxlength="512" style="width:350px;"/>
+                    </td>
                 </tr>
-                </li>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <?php if ($pdf_id > 0 && $file_url){ ?>
                 <tr>
                     <td>Old File:</td>
                     <td>
-                    <a href="<?php echo $file_url; ?>" target="_blank"><?php echo $pdf_obj_array['file_name']; ?></a>
-                    <input type="hidden" name="bsk_pdf_manager_pdf_file_old" id="bsk_pdf_manager_pdf_file_old_id" value="<?php echo $pdf_obj_array['file_name']; ?>" />
+                        <a href="<?php echo $file_url; ?>" target="_blank"><?php echo $pdf_obj_array['file_name']; ?></a>
+                        <input type="hidden" name="bsk_pdf_manager_pdf_file_old" id="bsk_pdf_manager_pdf_file_old_id" value="<?php echo $pdf_obj_array['file_name']; ?>" />
                     </td>
                 </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <?php } ?>
                 <tr>
                     <td>Upload new:</td>
                     <td><input type="file" name="bsk_pdf_file" id="bsk_pdf_file_id" value="Browse" /></td>
                 </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>
                 	<td>&nbsp;</td>
                     <td><span class="bsk_description">Maximum file size: <?php echo $maximumUploaded; ?></span></td>
                 </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>
                 	<td>&nbsp;</td>
                     <td><span class="bsk_description">Only <b>.pdf</b> allowed.</span></td>
                 </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+                <tr>
+                	<td>Date:</td>
+                    <td><input type="text" name="pdf_date" id="pdf_date_id" value="<?php echo $pdf_date ?>" class="bsk-date" /></td>
+                </tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>
                 	<input type="hidden" name="bsk_pdf_manager_action" value="pdf_save" />
                     <input type="hidden" name="bsk_pdf_manager_pdf_id" value="<?php echo $pdf_id; ?>" />
@@ -186,7 +202,7 @@ class BSKPDFManagerPDF {
                 </tr>
             </table>
           </p>
-		</div><!-- end of <div class="rs_checklist_tmpls_tools_edit"> -->
+		</div>
 		<?php
 	}
 	
@@ -204,7 +220,7 @@ class BSKPDFManagerPDF {
 		$pdf_data = array();
 		$pdf_data['cat_id'] = $data['bsk_pdf_manager_pdf_edit_categories'];
 		$pdf_data['title'] = $data['bsk_pdf_manager_pdf_titile'];
-		$pdf_data['last_date'] = date('Y-m-d H:i:s', current_time('timestamp'));
+		$pdf_data['last_date'] = trim($data['pdf_date']) ? trim($data['pdf_date']).' 00:00:00' : date('Y-m-d 00:00:00', current_time('timestamp'));
 		
 		$quotes_sybase = strtolower(ini_get('magic_quotes_sybase'));
 		if( get_magic_quotes_gpc() || empty($quotes_sybase) || $quotes_sybase === 'off'){
@@ -310,14 +326,10 @@ class BSKPDFManagerPDF {
 									   'linkonly' => '',
 									   'orderby' => '', 
 									   'order' => '', 
-									   'target' => ''), 
+									   'target' => '',
+									   'dropdown' => 'false',
+									   'mosttop' => 0), 
 								 $atts) );
-		
-		$show_link_only = false;
-		if( $linkonly && is_string($linkonly) && $linkonly == "yes" ){
-			$show_link_only = true;
-		}
-		
 		//organise ids array
 		$ids_array = array();
 		if( trim($id) == "" ){
@@ -356,24 +368,41 @@ class BSKPDFManagerPDF {
 			$order_str = ' DESC';
 		}
 		//link only
-		$return_link_only = false;
+		$show_link_only = false;
 		if( $linkonly && is_string($linkonly) ){
-			$return_link_only = $linkonly == 'true' ? true : false;
+			$show_link_only = $linkonly == 'yes' ? true : false;
 		}else if( is_bool($linkonly) ){
 			$return_link_only = $linkonly;
+		}
+		//dropdown
+		$output_as_dropdown = false;
+		if( $dropdown && is_string($dropdown) ){
+			$output_as_dropdown = $dropdown == 'yes' ? true : false;
+		}else if( is_bool($dropdown) ){
+			$output_as_dropdown = $dropdown;
+		}
+		//most recent count
+		$most_recent_count = intval($mosttop);
+		if( $most_recent_count < 1 ){
+			$most_recent_count = 99999;
 		}
 		
 		$str_body = '';
 		$sql = 'SELECT * FROM `'.$this->_pdfs_db_tbl_name.'` '.
 		       'WHERE `id` IN('.implode(',', $ids_array).') '.
-			   $order_by_str.$order_str;
+			   $order_by_str.$order_str.' '.
+			   'LIMIT 0, '.$most_recent_count;
 		$pdf_items_results = $wpdb->get_results( $sql );
 		if( !$pdf_items_results || !is_array($pdf_items_results) || count($pdf_items_results) < 1 ){
 			return '';
 		}
 		
 		if( $show_link_only == false ){
-			$str_body .= '<ul class="bsk-special-pdfs-container">';
+			if( $output_as_dropdown == false ){
+				$str_body .= '<ul class="bsk-special-pdfs-container">';
+			}else{
+				$str_body .= '<select name="bsk_pdf_manager_special_pdfs_select" class="bsk-pdf-manager-pdfs-select" attr_target="'.$target.'">';
+			}
 		}
 		if( $orderby == "" ){
 			//order by id sequence
@@ -391,7 +420,11 @@ class BSKPDFManagerPDF {
 					if( $show_link_only ){
 						$str_body .= $file_url;
 					}else{
-						$str_body .= '<li><a href="'.$file_url.'"'.$open_target_str.'>'.$pdf_item->title.'</a></li>'."\n";
+						if( $output_as_dropdown == false ){
+							$str_body .= '<li><a href="'.$file_url.'"'.$open_target_str.'>'.$pdf_item->title.'</a></li>'."\n";
+						}else{
+							$str_body .= '<option value="'.$file_url.'">'.$pdf_item->title.'</option>'."\n";
+						}
 					}
 				}
 			}
@@ -402,13 +435,21 @@ class BSKPDFManagerPDF {
 					if( $show_link_only ){
 						$str_body .= $file_url;
 					}else{
-						$str_body .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item->title.'</a></li>'."\n";
+						if( $output_as_dropdown == false ){
+							$str_body .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item->title.'</a></li>'."\n";
+						}else{
+							$str_body .= '<option value="'.$file_url.'">'.$pdf_item->title.'</option>'."\n";
+						}
 					}
 				}
 			}
 		}
 		if( $show_link_only == false ){
-			$str_body .= '</ul>';
+			if( $output_as_dropdown == false ){
+				$str_body .= '</ul>';
+			}else{
+				$str_body .= '</select>';
+			}
 		}
 
 		return $str_body;

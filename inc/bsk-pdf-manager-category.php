@@ -40,17 +40,21 @@ class BSKPDFManagerCategory {
 		global $wpdb;
 		
 		$cat_title = '';
+		$cat_date = date( 'Y-m-d', current_time('timestamp') );
 		if ($category_id > 0){
 			$sql = 'SELECT * FROM '.$this->_categories_db_tbl_name.' WHERE id = '.$category_id;
 			$category_obj_array = $wpdb->get_results( $sql );
 			if (count($category_obj_array) > 0){
 				$cat_title = $category_obj_array[0]->cat_title;
+				$cat_date = date( 'Y-m-d', strtotime($category_obj_array[0]->last_date) );
 			}
 		}
 		
 		$str = '<div class="bsk_pdf_manager_category_edit">';
 		$str .='<h4>Category Title</h4>';
 		$str .='<p><input type="text" name="cat_title" id="cat_title_id" value="'.$cat_title.'" maxlength="512" /></p>';
+		$str .='<h4>Date</h4>';
+		$str .='<p><input type="text" name="cat_date" id="cat_date_id" value="'.$cat_date.'" class="bsk-date" /></p>';
 		$str .='<p>
 					<input type="hidden" name="bsk_pdf_manager_action" value="category_save" />
 					<input type="hidden" name="bsk_pdf_manager_category_id" value="'.$category_id.'" />'.
@@ -63,6 +67,7 @@ class BSKPDFManagerCategory {
 	
 	function bsk_pdf_manager_category_save_fun( $data ){
 		global $wpdb;
+		
 		//check nonce field
 		if ( !wp_verify_nonce( $data['bsk_pdf_manager_category_save_oper_nonce'], plugin_basename( __FILE__ ) ) ){
 			return;
@@ -73,7 +78,8 @@ class BSKPDFManagerCategory {
 		}
 		$id = $data['bsk_pdf_manager_category_id'];
 		$title = trim($data['cat_title']);
-		$last_date = date( 'Y-m-d H:i:s', current_time('timestamp') );
+		$last_date = trim($data['cat_date']);
+		$last_date = $last_date ? $last_date.' 00:00:00' : date( 'Y-m-d 00:00:00', current_time('timestamp') );
 		
 		$quotes_sybase = strtolower(ini_get('magic_quotes_sybase'));
 		if (get_magic_quotes_gpc() || empty($quotes_sybase) || $quotes_sybase === 'off'){
@@ -99,7 +105,9 @@ class BSKPDFManagerCategory {
 									   'orderby' => '', 
 									   'order' => '', 
 									   'target' => '', 
-									   'showcattitle' => ''), 
+									   'showcattitle' => '',
+									   'dropdown' => 'false',
+									   'mosttop' => 0),
 								  $atts ) );
 		$show_cat_title = false;
 		if( $showcattitle && is_string($showcattitle) && $showcattitle == "yes" ){
@@ -143,7 +151,6 @@ class BSKPDFManagerCategory {
 		if( $target == '_blank' ){
 			$open_target_str = 'target="_blank"';
 		}
-		
 		//process order
 		$order_by_str = ' ORDER BY `title`'; //default set to title
 		$order_str = ' ASC';
@@ -156,6 +163,18 @@ class BSKPDFManagerCategory {
 		}
 		if( trim($order) == 'DESC' ){
 			$order_str = ' DESC';
+		}
+		//dropdown
+		$output_as_dropdown = false;
+		if( $dropdown && is_string($dropdown) ){
+			$output_as_dropdown = $dropdown == 'true' ? true : false;
+		}else if( is_bool($dropdown) ){
+			$output_as_dropdown = $dropdown;
+		}
+		//most recent count
+		$most_recent_count = intval($mosttop);
+		if( $most_recent_count < 1 ){
+			$most_recent_count = 99999;
 		}
 
 		$home_url = site_url();
@@ -173,20 +192,33 @@ class BSKPDFManagerCategory {
 			//get pdf items in the category
 			$sql = 'SELECT * FROM `'.$this->_pdfs_db_tbl_name.'` '.
 				   'WHERE `cat_id` = '.$category_id.' '.
-				   $order_by_str.$order_str;
+				   $order_by_str.$order_str.' '.
+			   	   'LIMIT 0, '.$most_recent_count;
 			$pdf_items_results = $wpdb->get_results( $sql );
 			if( !$pdf_items_results || !is_array($pdf_items_results) || count($pdf_items_results) < 1 ){
 				$forStr .=  '</div>'."\n";
 				continue;
 			}
-			$forStr .= '<ul class="bsk-special-pdfs-container">'."\n";
+			if( $output_as_dropdown == false ){
+				$forStr .= '<ul class="bsk-special-pdfs-container">'."\n";
+			}else{
+				$forStr .= '<select name="bsk_pdf_manager_special_pdfs_select" class="bsk-pdf-manager-pdfs-select cat-'.$category_id.'" attr_target="'.$target.'">';
+			}
 			foreach($pdf_items_results as $pdf_item_obj ){
 				if( $pdf_item_obj->file_name && file_exists($this->_pdfs_upload_path.$pdf_item_obj->file_name) ){
 					$file_url = $home_url.'/'.$this->_pdfs_upload_folder.$pdf_item_obj->file_name;
-					$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item_obj->title.'</a></li>'."\n";
+					if( $output_as_dropdown == false ){
+						$forStr .= '<li><a href="'.$file_url.'" '.$open_target_str.'>'.$pdf_item_obj->title.'</a></li>'."\n";
+					}else{
+						$forStr .= '<option value="'.$file_url.'">'.$pdf_item_obj->title.'</option>'."\n";
+					}
 				}
 			}
-			$forStr .= '</ul>'."\n";
+			if( $output_as_dropdown == false ){
+				$forStr .= '</ul>';
+			}else{
+				$forStr .= '</select>';
+			}
 			
 			$forStr .=  '</div>'."\n";
 		}

@@ -199,12 +199,12 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 			}
 			$shortcode_str = $file_str ? '[bsk-pdf-manager-pdf id="'.$pdf_record->id.'"]' : '';
 			$lists_data[] = array( 
-								'id' 				=> $pdf_record->id,
+								'id' 				=> '<a href="'.$edit_url.'">'.$pdf_record->id.'</a>',
 								'title'     		=> '<a href="'.$edit_url.'">'.$pdf_record->title.'</a>',
 								'file_name'     	=> $file_str,
 								'category'			=> $pdf_record->cat_title,
 								'shortcode'			=> $shortcode_str,
-								'last_date' 		=> $pdf_record->last_date,
+								'last_date' 		=> date('Y-m-d', strtotime($pdf_record->last_date)),
 								 );
 		}
 		
@@ -257,7 +257,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 							'file_name'     	=> 'File Name',
 							'category'     		=> 'Category',
 							'shortcode'     	=> 'Shortcode',
-							'last_date' 		=> 'Last Date'
+							'last_date' 		=> 'Date'
 						);
 		
 		$hidden = array();

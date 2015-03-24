@@ -2,8 +2,8 @@
 
 /*
 Plugin Name: BSK PDF Manager
-Description: Help you manager PDF documents. PDF documents can be filter by category. Support short code to show special PDF document or list all under special category. Widget display will be supported soon.
-Version: 1.3.4
+Description: Help you manage your PDF documents. PDF documents can be filter by category. Support short code to show special PDF documents or all PDF documents under  category. Widget supported.
+Version: 1.3.5
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 require_once('inc/bsk-pdf-manager-widget.php');
 class BSKPDFManager {
-
+	
+	var $_bsk_pdf_manager_plugin_version = '1.3.5';
 	var $_bsk_pdf_manager_upload_folder = 'wp-content/uploads/bsk-pdf-manager/';
 	var $_bsk_pdf_manager_upload_path = ABSPATH;
 	var $_bsk_pdf_manager_admin_notice_message = array();
@@ -48,8 +49,10 @@ class BSKPDFManager {
 		$this->_bsk_pdf_manager_upload_path = str_replace("\\", "/", $this->_bsk_pdf_manager_upload_path);
 
 		if(is_admin()) {
-			add_action('admin_notices', array($this, 'bsk_pdf_manager_admin_notice') );
-			add_action('admin_init', array(&$this, 'bsk_pdf_manager_admin_enqueue_scripts_css') );
+			add_action( 'admin_notices', array($this, 'bsk_pdf_manager_admin_notice') );
+			add_action( 'admin_enqueue_scripts', array($this, 'bsk_pdf_manager_enqueue_scripts_css') );
+		}else{
+			add_action( 'wp_enqueue_scripts', array($this, 'bsk_pdf_manager_enqueue_scripts_css') );
 		}
 		add_action( 'widgets_init', create_function( '', 'register_widget( "BSKPDFManagerWidget" );' ) );
 		
@@ -92,9 +95,15 @@ class BSKPDFManager {
 		BSKPDFManager::bsk_pdf_manager_remove_table();
 	}
 	
-	function bsk_pdf_manager_admin_enqueue_scripts_css(){
+	function bsk_pdf_manager_enqueue_scripts_css(){
 		wp_enqueue_script('jquery');
-		wp_enqueue_script( 'bsk-pdf-manager-admin', plugins_url('js/bsk_pdf_manager_admin.js', __FILE__), array('jquery') );
+		if( is_admin() ){
+			wp_enqueue_script( 'jquery-ui-datepicker' );
+			wp_enqueue_style( 'jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css' );
+			wp_enqueue_script( 'bsk-pdf-manager-admin', plugins_url('js/bsk_pdf_manager_admin.js', __FILE__), array('jquery'), $this->_bsk_pdf_manager_plugin_version );
+		}else{
+			wp_enqueue_script( 'bsk-pdf-manager', plugins_url('js/bsk_pdf_manager.js', __FILE__), array('jquery'), $this->_bsk_pdf_manager_plugin_version );
+		}
 	}
 	
 	function bsk_pdf_manager_admin_notice(){

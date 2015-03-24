@@ -174,9 +174,9 @@ class BSKPDFManagerCategories extends WP_List_Table {
 													   'categoryid' => $category->id),
 												 $base );
 			$categories_data[] = array( 
-				'id' 				=> $category->id,
+				'id' 				=> '<a href="'.$category_edit_page.'">'.$category->id.'</a>',
 				'cat_title'     	=> '<a href="'.$category_edit_page.'">'.$category->cat_title.'</a>',
-				'last_date'			=> $category->last_date,
+				'last_date'			=> date('Y-m-d', strtotime($category->last_date)),
 				'shortcode'			=> '[bsk-pdf-manager-list-category id="'.$category->id.'"]'
 			);
 		}
