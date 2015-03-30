@@ -5,7 +5,7 @@ Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
 Tested up to: 4.1.1
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 
 == Description ==
 
@@ -36,6 +36,10 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 
 == Changelog ==
+
+1.3.6
+
+* Fix the bug of cannot delete PDF item or category.
 
 1.3.5
 

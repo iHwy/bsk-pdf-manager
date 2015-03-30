@@ -40,7 +40,7 @@ class BSKPDFManagerCategories extends WP_List_Table {
     function column_default( $item, $column_name ) {
         switch( $column_name ) {
 			case 'id':
-				echo $item['id'];
+				echo $item['id_link'];
 				break;
 			case 'cat_title':
 				echo $item['cat_title'];
@@ -174,7 +174,8 @@ class BSKPDFManagerCategories extends WP_List_Table {
 													   'categoryid' => $category->id),
 												 $base );
 			$categories_data[] = array( 
-				'id' 				=> '<a href="'.$category_edit_page.'">'.$category->id.'</a>',
+			    'id' 				=> $category->id,
+				'id_link' 			=> '<a href="'.$category_edit_page.'">'.$category->id.'</a>',
 				'cat_title'     	=> '<a href="'.$category_edit_page.'">'.$category->cat_title.'</a>',
 				'last_date'			=> date('Y-m-d', strtotime($category->last_date)),
 				'shortcode'			=> '[bsk-pdf-manager-list-category id="'.$category->id.'"]'

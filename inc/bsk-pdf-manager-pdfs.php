@@ -34,7 +34,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
     function column_default( $item, $column_name ) {
         switch( $column_name ) {
 			case 'id':
-				echo $item['id'];
+				echo $item['id_link'];
 				break;
 			case 'title':
 				echo $item['title'];
@@ -199,7 +199,8 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 			}
 			$shortcode_str = $file_str ? '[bsk-pdf-manager-pdf id="'.$pdf_record->id.'"]' : '';
 			$lists_data[] = array( 
-								'id' 				=> '<a href="'.$edit_url.'">'.$pdf_record->id.'</a>',
+								'id'				=> $pdf_record->id,
+								'id_link' 			=> '<a href="'.$edit_url.'">'.$pdf_record->id.'</a>',
 								'title'     		=> '<a href="'.$edit_url.'">'.$pdf_record->title.'</a>',
 								'file_name'     	=> $file_str,
 								'category'			=> $pdf_record->cat_title,
