@@ -55,7 +55,7 @@ class BSKPDFManagerDashboard {
 			return;
 		}
 		
-		$authorized_level = 'level_10';
+		$authorized_level = 'level_3';
 		
 		add_menu_page('BSK PDF Manager', 'BSK PDF Manager', $authorized_level, 'bsk-pdf-manager');
 		add_submenu_page( 'bsk-pdf-manager',
@@ -152,7 +152,10 @@ class BSKPDFManagerDashboard {
 			//Fetch, prepare, sort, and filter our data...
 			$this->_bsk_pdf_manager_OBJ_pdfs->prepare_items();
 			
-			$current_category_id = $_REQUEST['cat'];
+			$current_category_id = 0;
+			if( isset($_REQUEST['cat']) ){
+				$current_category_id = $_REQUEST['cat'];
+			}
 			$add_new_page = admin_url( 'admin.php?page=bsk-pdf-manager-pdfs' );
 			$add_new_page = add_query_arg( 'view', 'addnew', $add_new_page );
 			if( $current_category_id ){
@@ -213,7 +216,7 @@ class BSKPDFManagerDashboard {
 	function bsk_pdf_manager_current_user_can(){
 		global $current_user;
 		
-		if ( current_user_can('level_10') ){
+		if ( current_user_can('level_3') ){
 			return true;
 		}else{
 			/*

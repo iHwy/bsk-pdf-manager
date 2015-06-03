@@ -6,7 +6,6 @@ class BSKPDFManagerPDF {
 	var $_pdfs_db_tbl_name = '';
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
-	var $_bsk_pdf_manager_managment_obj = NULL;
 	
 	var $_bsk_pdfs_page_name = '';
 	var $_file_upload_message = array();
@@ -21,7 +20,6 @@ class BSKPDFManagerPDF {
 		$this->_pdfs_db_tbl_name = $args['pdfs_db_tbl_name'];
 		$this->_pdfs_upload_path = $args['pdf_upload_path'];
 	    $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
-		$this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
 		$this->_plugin_pages_name = $args['pages_name_A'];
 		$this->_open_target_option_name = $args['open_target_option_name'];
 		
@@ -116,7 +114,7 @@ class BSKPDFManagerPDF {
 				$pdf_date = date('Y-m-d', strtotime($pdf_obj_array['last_date']));
 			}
 		}
-		$category_id = $_REQUEST['cat'];
+		$category_id = isset($_REQUEST['cat']) ? $_REQUEST['cat'] : 0;
 		if ( isset($pdf_obj_array['cat_id']) ){
 			$category_id = $pdf_obj_array['cat_id'];
 		}
@@ -132,7 +130,7 @@ class BSKPDFManagerPDF {
 			}
 			
 			
-			if( $pdf_obj_array['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_obj_array['file_name']) ){
+			if( $pdf_obj_array && isset($pdf_obj_array['file_name']) && $pdf_obj_array['file_name'] && file_exists($this->_pdfs_upload_path.$pdf_obj_array['file_name']) ){
 				$file_url = get_option('home').'/'.$this->_pdfs_upload_folder.$pdf_obj_array['file_name'];
 			}else{
 				$file_str = '';
@@ -158,10 +156,16 @@ class BSKPDFManagerPDF {
                     </td>
                 </tr>
                 <tr><td colspan="2">&nbsp;</td></tr>
+                <?php
+				$title_value = '';
+				if( $pdf_obj_array && isset($pdf_obj_array['title']) ){
+					$title_value = $pdf_obj_array['title'];
+				}
+				?>
                 <tr>
                     <td style="width:150px;">Title:</td>
                     <td>
-                    	<input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $pdf_obj_array['title']; ?>" maxlength="512" style="width:350px;"/>
+                    	<input type="text" name="bsk_pdf_manager_pdf_titile" id="bsk_pdf_manager_pdf_titile_id" value="<?php echo $title_value; ?>" maxlength="512" style="width:350px;"/>
                     </td>
                 </tr>
                 <tr><td colspan="2">&nbsp;</td></tr>
@@ -182,7 +186,7 @@ class BSKPDFManagerPDF {
                 <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>
                 	<td>&nbsp;</td>
-                    <td><span class="bsk_description">Maximum file size: <?php echo $maximumUploaded; ?></span></td>
+                    <td><span class="bsk_description">Maximum file size: <?php echo $maximumUploaded; ?></span> To change this please modify your hosting configuration in php.ini or .htaccess file. </td>
                 </tr>
                 <tr><td colspan="2">&nbsp;</td></tr>
                 <tr>

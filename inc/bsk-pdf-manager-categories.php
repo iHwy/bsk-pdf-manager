@@ -10,7 +10,6 @@ class BSKPDFManagerCategories extends WP_List_Table {
 	var $_pdfs_db_tbl_name = '';
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
-	var $_bsk_pdf_manager_managment_obj = NULL;
 	var $_bsk_categories_page_name = '';
 	
 	var $_plugin_pages_name = array();
@@ -28,7 +27,6 @@ class BSKPDFManagerCategories extends WP_List_Table {
 	   $this->_pdfs_db_tbl_name = $args['pdfs_db_tbl_name'];
 	   $this->_pdfs_upload_path = $args['pdf_upload_path'];
 	   $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
-	   $this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
 	   $this->_plugin_pages_name = $args['pages_name_A'];
 	   
 	   $this->_bsk_categories_page_name = $this->_plugin_pages_name['category'];
@@ -87,7 +85,7 @@ class BSKPDFManagerCategories extends WP_List_Table {
     function get_views() {
 		//$views = array('filter' => '<select name="a"><option value="1">1</option></select>');
 		
-        return $views;
+        return array();
     }
    
     function get_bulk_actions() {
@@ -140,6 +138,9 @@ class BSKPDFManagerCategories extends WP_List_Table {
     function get_data() {
 		global $wpdb;
 		
+		$search = '';
+		$orderby = '';
+		$order = '';
         // check to see if we are searching
         if( isset( $_POST['s'] ) ) {
             $search = trim( $_POST['s'] );
@@ -217,8 +218,8 @@ class BSKPDFManagerCategories extends WP_List_Table {
 
 	
 	function get_column_info() {
-
-		 $columns = array( 
+		
+		$columns = array( 
 							'cb'        		=> '<input type="checkbox"/>',
 							'id'				=> 'ID',
 							'cat_title'     	=> 'Title',
@@ -228,7 +229,7 @@ class BSKPDFManagerCategories extends WP_List_Table {
 		
 		$hidden = array();
 
-		$_sortable = apply_filters( "manage_{$screen->id}_sortable_columns", $this->get_sortable_columns() );
+		$_sortable = apply_filters( "manage_{$this->screen->id}_sortable_columns", $this->get_sortable_columns() );
 
 		$sortable = array();
 		foreach ( $_sortable as $id => $data ) {

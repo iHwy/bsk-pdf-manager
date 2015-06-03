@@ -3,7 +3,7 @@
 /*
 Plugin Name: BSK PDF Manager
 Description: Help you manage your PDF documents. PDF documents can be filter by category. Support short code to show special PDF documents or all PDF documents under  category. Widget supported.
-Version: 1.3.6
+Version: 1.3.7
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -24,11 +24,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
-
 require_once('inc/bsk-pdf-manager-widget.php');
+
 class BSKPDFManager {
 	
-	var $_bsk_pdf_manager_plugin_version = '1.3.5';
+	var $_bsk_pdf_manager_plugin_version = '1.3.7';
 	var $_bsk_pdf_manager_upload_folder = 'wp-content/uploads/bsk-pdf-manager/';
 	var $_bsk_pdf_manager_upload_path = ABSPATH;
 	var $_bsk_pdf_manager_admin_notice_message = array();
@@ -125,7 +125,7 @@ class BSKPDFManager {
 		//show error message
 		if(count($warning_message) > 0){
 			echo '<div class="update-nag">';
-			foreach($this->warning_message as $msg_to_show){
+			foreach($warning_message as $msg_to_show){
 				echo '<p>'.$msg_to_show.'</p>';
 			}
 			echo '</div>';
@@ -134,7 +134,7 @@ class BSKPDFManager {
 		//show error message
 		if(count($error_message) > 0){
 			echo '<div class="error">';
-			foreach($this->error_message as $msg_to_show){
+			foreach($error_message as $msg_to_show){
 				echo '<p>'.$msg_to_show.'</p>';
 			}
 			echo '</div>';

@@ -6,7 +6,6 @@ class BSKPDFManagerCategory {
 	var $_pdfs_db_tbl_name = '';
 	var $_pdfs_upload_path = '';
 	var $_pdfs_upload_folder = '';
-    var $_bsk_pdf_manager_managment_obj = NULL;
 	var $_bsk_categories_page_name = '';
 	
 	var $_plugin_pages_name = array();
@@ -22,7 +21,6 @@ class BSKPDFManagerCategory {
 	    $this->_pdfs_db_tbl_name = $args['pdfs_db_tbl_name'];
 		$this->_pdfs_upload_path = $args['pdf_upload_path'];
 	    $this->_pdfs_upload_folder = $args['pdf_upload_folder'];
-	    $this->_bsk_pdf_manager_managment_obj = $args['management_obj'];
 		$this->_plugin_pages_name = $args['pages_name_A'];
 		$this->_open_target_option_name = $args['open_target_option_name'];
 		$this->_show_category_title_when_listing_pdfs = $args['show_category_title'];

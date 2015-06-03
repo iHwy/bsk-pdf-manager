@@ -95,8 +95,11 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 		if (!$categoreies || count($categoreies) < 1){
 			$select_str_body = '<option value="0">Please add category first</option>';
 		}else{
-			$current_category_id = $_REQUEST['cat'];
-			if ($current_category_id < 1){
+			$current_category_id = 0;
+			if( isset($_REQUEST['cat']) ){
+				$current_category_id = $_REQUEST['cat'];
+			}
+			if( $current_category_id < 1 && isset($_REQUEST['bsk_pdf_manager_pdf_edit_categories']) ){
 				$current_category_id = $_REQUEST['bsk_pdf_manager_pdf_edit_categories'];
 			}
 			$select_str_body = '<option value="0">Please select category</option>';
@@ -158,7 +161,12 @@ class BSKPDFManagerPDFs extends WP_List_Table {
     function get_data() {
 		global $wpdb;
 		
-		$current_category_id = $_REQUEST['cat'];
+		$current_category_id = 0;
+		$orderby = '';
+		$order = '';
+		if( isset($_REQUEST['cat']) ){
+			$current_category_id = $_REQUEST['cat'];
+		}
 		if ( isset( $_REQUEST['orderby'] ) ){
 			$orderby = $_REQUEST['orderby'];
 		}
@@ -263,7 +271,7 @@ class BSKPDFManagerPDFs extends WP_List_Table {
 		
 		$hidden = array();
 
-		$_sortable = apply_filters( "manage_{$screen->id}_sortable_columns", $this->get_sortable_columns() );
+		$_sortable = apply_filters( "manage_{$this->screen->id}_sortable_columns", $this->get_sortable_columns() );
 
 		$sortable = array();
 		foreach ( $_sortable as $id => $data ) {
