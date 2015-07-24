@@ -181,7 +181,7 @@ class BSKPDFManagerCategory {
 			if( !isset($categories_id_as_key[$category_id]) ){
 				continue;
 			}
-			$forStr .=	'<div class="bsk-pdf-category">'."\n";
+			$forStr =	'<div class="bsk-pdf-category">'."\n";
 			
 			if( $show_cat_title ){
 				$forStr .=	'<h2>'.$categories_id_as_key[$category_id]->cat_title.'</h2>'."\n";
