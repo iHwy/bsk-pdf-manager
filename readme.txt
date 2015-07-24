@@ -4,8 +4,8 @@ Donate link: http://www.bannersky.com/donate/
 Plugin URI: http://www.bannersky.com/bsk-pdf-manager/
 Tags: PDF,manager,category,widget
 Requires at least: 3.2.1
-Tested up to: 4.2.2
-Stable tag: 1.3.7
+Tested up to: 4.2.3
+Stable tag: 1.3.8
 
 == Description ==
 
@@ -36,6 +36,10 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 
 == Changelog ==
+
+1.3.7
+
+* Change PDF file name to XXXX_ID.pdf.
 
 1.3.7
 

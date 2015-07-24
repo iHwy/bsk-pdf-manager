@@ -297,11 +297,12 @@ class BSKPDFManagerPDF {
 		//check if PDF name is unicode or not
 		$upload_pdf_name = $file["name"];
 		if( strlen($upload_pdf_name) != strlen(utf8_decode($upload_pdf_name)) ){
-			$destinate_file_name = $destination_name_prefix.'_'.date('Y-m-d', current_time('timestamp')).'.pdf';
+			$destinate_file_name = date('Y-m-d', current_time('timestamp')).'_'.$destination_name_prefix.'.pdf';
 		}else{
-			$destinate_file_name = $destination_name_prefix.'_'.$upload_pdf_name;
+			$upload_pdf_name_new = str_replace('.pdf', '', $upload_pdf_name);
+			$destinate_file_name = $upload_pdf_name_new.'_'.$destination_name_prefix.'.pdf';
 		}
-		$destinate_file_name = strtoupper( $destinate_file_name );
+		//$destinate_file_name = strtoupper( $destinate_file_name );
 		$destinate_file_name = str_replace(' ', '_', $destinate_file_name);
 		$ret = move_uploaded_file($file["tmp_name"], $this->_pdfs_upload_path.$destinate_file_name);
 		if( !$ret ){

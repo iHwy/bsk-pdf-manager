@@ -3,7 +3,7 @@
 /*
 Plugin Name: BSK PDF Manager
 Description: Help you manage your PDF documents. PDF documents can be filter by category. Support short code to show special PDF documents or all PDF documents under  category. Widget supported.
-Version: 1.3.7
+Version: 1.3.8
 Author: bannersky
 Author URI: http://www.bannersky.com/
 
@@ -28,7 +28,7 @@ require_once('inc/bsk-pdf-manager-widget.php');
 
 class BSKPDFManager {
 	
-	var $_bsk_pdf_manager_plugin_version = '1.3.7';
+	var $_bsk_pdf_manager_plugin_version = '1.3.8';
 	var $_bsk_pdf_manager_upload_folder = 'wp-content/uploads/bsk-pdf-manager/';
 	var $_bsk_pdf_manager_upload_path = ABSPATH;
 	var $_bsk_pdf_manager_admin_notice_message = array();
