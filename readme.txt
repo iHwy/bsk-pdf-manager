@@ -37,7 +37,7 @@ Please visit <a href="http://www.bannersky.com/bsk-pdf-manager/">http://www.bann
 
 == Changelog ==
 
-1.3.7
+1.3.8
 
 * Change PDF file name to XXXX_ID.pdf.
 
